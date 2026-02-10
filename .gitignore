@@ -25,7 +25,6 @@ target
 *.tar.gz
 *.rar
 *.iml
-package-lock.json
 
 # Environment variables
 .env
@@ -87,22 +86,10 @@ __pycache__/
 
 # Lock files (keep package-lock.json and similar)
 *.lock
-!package-lock.json
+package-lock.json
 !yarn.lock
 !pnpm-lock.yaml
-
-# Docker volumes and data
-docker-data/
-volumes/
 
 # Generated documentation
 docs/_build/
 site/
-
-# RepoDoctor runtime data
-artifacts/
-workspaces/
-data/
-
-# List models script (project-specific)
-list_model.sh

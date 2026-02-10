@@ -1,6 +1,6 @@
 {
   "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
-  "name": "rewinddit",
+  "name": "rewinddittt",
   "post": {
     "dir": "dist/client",
     "entrypoints": {
@@ -42,5 +42,8 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build"
+  },
+  "dev": {
+    "subreddit": "rewinddittt_dev"
   }
 }
