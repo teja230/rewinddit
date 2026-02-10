@@ -21,6 +21,18 @@ import type { DailyPuzzle } from './core/puzzle';
 
 const t = initTRPC.create();
 
+// ── Safe user ID helper ──
+
+async function getUserId(): Promise<string> {
+  try {
+    const username = await reddit.getCurrentUsername();
+    return username ?? 'anonymous';
+  } catch (err) {
+    console.error('Failed to get username:', err);
+    return 'anonymous';
+  }
+}
+
 // ── Redis key helpers ──
 
 const K = {
@@ -80,8 +92,7 @@ export const appRouter = t.router({
   puzzleToday: t.procedure.query(async (): Promise<PuzzleTodayResponse> => {
     const today = getTodayUTC();
     const puzzle = await ensurePuzzle(today);
-    const username = await reddit.getCurrentUsername();
-    const userId = username ?? 'anonymous';
+    const userId = await getUserId();
 
     const existingPlay = await redis.get(K.play(today, userId));
     const hasPlayed = existingPlay !== undefined && existingPlay !== null;
@@ -112,10 +123,9 @@ export const appRouter = t.router({
     )
     .mutation(async ({ input }): Promise<SubmitResult> => {
       const today = getTodayUTC();
-      const username = await reddit.getCurrentUsername();
-      const userId = username ?? 'anonymous';
+      const userId = await getUserId();
 
-      await redis.set(K.userName(userId), username ?? 'anonymous');
+      await redis.set(K.userName(userId), userId);
 
       // Check replay
       const existingPlay = await redis.get(K.play(today, userId));

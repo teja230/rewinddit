@@ -15,14 +15,22 @@ internal.route('/menu', menu);
 internal.route('/triggers', triggers);
 internal.route('/scheduler', scheduler);
 
-// tRPC endpoint — handles all /trpc/* requests
-app.all('/trpc/*', (c) => {
-  return fetchRequestHandler({
-    endpoint: '/trpc',
-    req: c.req.raw,
-    router: appRouter,
-    createContext: () => ({}),
-  });
+// Health check
+app.get('/health', (c) => c.json({ status: 'ok' }));
+
+// tRPC endpoint — mounted under /api so Devvit proxies it to the server
+app.all('/api/trpc/*', async (c) => {
+  try {
+    return await fetchRequestHandler({
+      endpoint: '/api/trpc',
+      req: c.req.raw,
+      router: appRouter,
+      createContext: () => ({}),
+    });
+  } catch (err) {
+    console.error('tRPC handler error:', err);
+    return c.json({ error: 'Internal server error' }, 500);
+  }
 });
 
 // REST fallback endpoints (kept for scheduler/internal routes + backward compat)
