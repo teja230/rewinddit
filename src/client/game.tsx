@@ -496,6 +496,44 @@ function Leaderboard({
   );
 }
 
+// ── Next puzzle countdown ──
+
+function NextPuzzleCountdown() {
+  const [timeLeft, setTimeLeft] = useState('');
+
+  useEffect(() => {
+    const update = () => {
+      const now = new Date();
+      const tomorrow = new Date(
+        Date.UTC(
+          now.getUTCFullYear(),
+          now.getUTCMonth(),
+          now.getUTCDate() + 1
+        )
+      );
+      const diff = tomorrow.getTime() - now.getTime();
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setTimeLeft(
+        `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+      );
+    };
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="text-center py-4">
+      <p className="text-xs text-gray-400 uppercase tracking-wide">
+        Next puzzle in
+      </p>
+      <p className="text-2xl font-bold text-gray-700 font-mono">{timeLeft}</p>
+    </div>
+  );
+}
+
 // ── Main App ──
 
 export const App = () => {
@@ -697,6 +735,9 @@ export const App = () => {
               entries={result.leaderboards.allTimeTop}
             />
           </div>
+
+          {/* Next puzzle countdown */}
+          <NextPuzzleCountdown />
         </div>
       </div>
     );

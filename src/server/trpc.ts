@@ -12,6 +12,9 @@ import {
   getTodayUTC,
   getYesterdayUTC,
   scoreGuesses,
+  hashString,
+  mulberry32,
+  shuffleArray,
   MIN_YEAR,
   MAX_YEAR,
 } from './core/puzzle';
@@ -48,10 +51,10 @@ async function getTopEntries(
   key: string,
   count: number
 ): Promise<LeaderboardEntry[]> {
-  const members = await redis.zRange(key, '+inf', '-inf', {
-    by: 'score',
+  // Use rank-based range with reverse to get highest scores first
+  const members = await redis.zRange(key, 0, count - 1, {
+    by: 'rank',
     reverse: true,
-    limit: { offset: 0, count },
   });
 
   const entries: LeaderboardEntry[] = [];
@@ -67,10 +70,12 @@ async function getUserRank(
   key: string,
   userId: string
 ): Promise<number | undefined> {
+  // zRank returns 0-based rank from lowest score
+  // We need rank from highest, so: total - zRank
   const rank = await redis.zRank(key, userId);
-  if (rank === undefined) return undefined;
-  const all = await redis.zRange(key, 0, -1, { by: 'rank' });
-  return all.length - rank;
+  if (rank === undefined || rank === null) return undefined;
+  const total = await redis.zCard(key);
+  return total - rank;
 }
 
 // ── Router ──
@@ -89,7 +94,11 @@ export const appRouter = t.router({
       previousResult = JSON.parse(existingPlay!) as SubmitResult;
     }
 
-    const moments = getMomentPrompts(puzzle.momentIds);
+    // Shuffle question order per-user (same 5 Qs, different order)
+    const userSeed = hashString(`${userId}:${today}`);
+    const userRng = mulberry32(userSeed);
+    const shuffledIds = shuffleArray([...puzzle.momentIds], userRng);
+    const moments = getMomentPrompts(shuffledIds);
 
     return {
       date: today,

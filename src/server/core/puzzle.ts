@@ -4,7 +4,7 @@ import { KEY_PREFIX } from './redisKeys';
 
 // ── Deterministic PRNG (mulberry32) ──
 
-function hashString(str: string): number {
+export function hashString(str: string): number {
   let h = 0;
   for (let i = 0; i < str.length; i++) {
     h = Math.imul(31, h) + str.charCodeAt(i);
@@ -13,7 +13,7 @@ function hashString(str: string): number {
   return h >>> 0;
 }
 
-function mulberry32(seed: number): () => number {
+export function mulberry32(seed: number): () => number {
   let s = seed | 0;
   return () => {
     s = (s + 0x6d2b79f5) | 0;
@@ -24,7 +24,7 @@ function mulberry32(seed: number): () => number {
 }
 
 // Fisher-Yates shuffle with PRNG
-function shuffleArray<T>(arr: T[], rng: () => number): T[] {
+export function shuffleArray<T>(arr: T[], rng: () => number): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
