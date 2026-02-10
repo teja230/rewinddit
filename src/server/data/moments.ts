@@ -11,16 +11,18 @@ export type Moment = {
 };
 
 export const MOMENTS: Moment[] = [
-  // ── legendary_comment ──
+  // ═══════════════════════════════════════
+  // ── legendary_comment (12) ──
+  // ═══════════════════════════════════════
   {
     id: 'lc-01',
     year: 2009,
     category: 'legendary_comment',
-    promptTitle: 'The Most Down-Voted Comment of Its Era',
+    promptTitle: 'Stupid Long Horses',
     promptTextRedacted:
-      'A user posted a single-word reply — "________" — to a question about what irritates you about everyday life. It became one of the most down-voted comments at the time, turning into a long-running inside joke.',
+      'A user posted a comment about a photo of a tall animal, hilariously misspelling its name. The community piled on downvotes, and the edit history became an all-time classic.',
     revealContext:
-      'User "________" posted the reply "geraffes are so dumb" (misspelling of giraffes) in an AskReddit thread, spawning a legendary meme.',
+      '"geraffes are so dumb" — a user\'s misspelling of giraffes in r/pics became legendary. Their increasingly defensive edits made it even funnier.',
     revealLink: 'https://www.reddit.com/r/pics/comments/8aqjh/',
   },
   {
@@ -29,9 +31,9 @@ export const MOMENTS: Moment[] = [
     category: 'legendary_comment',
     promptTitle: 'Every Thread, Every Time',
     promptTextRedacted:
-      'A user gave a detailed answer about a medical condition that causes arms to be non-functional. The follow-up from the person asking turned into a phrase repeated on the site for years.',
+      'A user gave a detailed answer about a medical condition involving non-functional arms. The follow-up turned into a phrase referenced in nearly every comment section for years.',
     revealContext:
-      'The "broken arms" AMA became one of Reddit\'s most infamous threads, referenced in almost every comment section for years.',
+      'The "broken arms" AMA became one of Reddit\'s most infamous threads, spawning a reference that appeared in virtually every comment section for years afterward.',
   },
   {
     id: 'lc-03',
@@ -39,22 +41,21 @@ export const MOMENTS: Moment[] = [
     category: 'legendary_comment',
     promptTitle: 'The Rice Rating System',
     promptTextRedacted:
-      'A user asked people to suggest unusual food pairings. They then tried each one with a specific staple food and rated them all on a scale of 1–10.',
+      'A user asked people to suggest unusual food pairings. They tried each one with a specific staple food and rated them all, creating one of the most wholesome threads ever.',
     revealContext:
-      'The "with rice" thread in AskReddit where a user rated every food suggestion with rice, giving us the "X/10, X/10 with rice" meme.',
+      'The "with rice" thread in r/AskReddit where a user rated every food suggestion with rice — giving us the "X/10, X/10 with rice, thank you for your suggestion" meme.',
     revealLink: 'https://www.reddit.com/r/AskReddit/comments/2np694/',
   },
   {
     id: 'lc-04',
     year: 2017,
     category: 'legendary_comment',
-    promptTitle: 'The Sense of Pride and Accomplishment',
+    promptTitle: 'Pride and Accomplishment',
     promptTextRedacted:
-      'A major game studio responded to player complaints about progression mechanics. Their corporate reply became the most down-voted comment in the platform\'s history.',
+      'A major game studio responded to player complaints about unlock mechanics. Their corporate PR reply became the most down-voted comment in the platform\'s entire history.',
     revealContext:
-      'EA\'s "pride and accomplishment" comment defending Star Wars Battlefront II loot boxes received over 667,000 downvotes, still the all-time record.',
-    revealLink:
-      'https://www.reddit.com/r/StarWarsBattlefront/comments/7cff0b/',
+      'EA\'s "pride and accomplishment" comment defending Star Wars Battlefront II loot boxes received over 667,000 downvotes — still the all-time record by a massive margin.',
+    revealLink: 'https://www.reddit.com/r/StarWarsBattlefront/comments/7cff0b/',
   },
   {
     id: 'lc-05',
@@ -62,9 +63,9 @@ export const MOMENTS: Moment[] = [
     category: 'legendary_comment',
     promptTitle: 'Today You, Tomorrow Me',
     promptTextRedacted:
-      'A user shared a story about being stranded on the side of the road. A family of strangers stopped to help them, and the father said something that became one of the most-cited phrases on the site.',
+      'A user shared a story about being stranded on the road. A family of strangers stopped to help, and the father said something that became one of the most-cited phrases on the platform.',
     revealContext:
-      'The "Today you, tomorrow me" story about a Mexican family helping a stranger fix a flat tire became one of Reddit\'s most beloved comments.',
+      '"Today you, tomorrow me" — a Mexican family helped a stranded stranger fix a flat tire, sharing food and refusing payment. Widely considered the most heartwarming comment ever posted.',
     revealLink: 'https://www.reddit.com/r/AskReddit/comments/elal2/',
   },
   {
@@ -73,9 +74,9 @@ export const MOMENTS: Moment[] = [
     category: 'legendary_comment',
     promptTitle: 'The Museum of Filth',
     promptTextRedacted:
-      'A user compiled a list of the most notorious stories ever shared on the platform. The collection became a well-known reference list that new users were warned about.',
+      'A user compiled a master list of the platform\'s most notorious stories into one comment. The collection became a rite of passage — new users were both warned about and dared to read it.',
     revealContext:
-      'The Reddit "Museum of Filth" compiled legendary gross-out stories (Swamps of Dagobah, Jolly Rancher, etc.) into one infamous comment.',
+      'The Reddit "Museum of Filth" linked to legendary gross-out stories (Swamps of Dagobah, Jolly Rancher, Coconut, etc.) in one infamous comment. Proceed at your own risk.',
   },
   {
     id: 'lc-07',
@@ -83,13 +84,67 @@ export const MOMENTS: Moment[] = [
     category: 'legendary_comment',
     promptTitle: 'The Safe',
     promptTextRedacted:
-      'A user found a large locked container in a house they had just moved into. They posted photos and promised to reveal the contents, then disappeared for months.',
+      'A user found a mysterious large locked container in a house they\'d just moved into. They posted photos, promised to reveal the contents — then vanished for months. The entire platform was obsessed.',
     revealContext:
-      'The famous Reddit Safe saga — a user found a safe in their new house, the post went massively viral, and the safe was eventually opened (it was empty).',
+      'The Reddit Safe saga captivated millions. After months of waiting, a different user finally opened it — and it was completely empty. The anticlimax became legendary in itself.',
     revealLink: 'https://www.reddit.com/r/WhatsInThisThing/',
   },
+  {
+    id: 'lc-08',
+    year: 2016,
+    category: 'legendary_comment',
+    promptTitle: 'The Singer Gets a Taste of His Own Medicine',
+    promptTextRedacted:
+      'A famous musician did a Q&A session. A user linked them to a specific video as a reply — and the artist unknowingly clicked it, falling for the very internet prank they made famous.',
+    revealContext:
+      'Rick Astley did an AMA on r/Music and got rickrolled by a user who disguised a link to "Never Gonna Give You Up." Even Rick fell for it.',
+    revealLink: 'https://www.reddit.com/r/Music/comments/56cdgm/',
+  },
+  {
+    id: 'lc-09',
+    year: 2014,
+    category: 'legendary_comment',
+    promptTitle: 'Dirty Talk Gone Wrong',
+    promptTextRedacted:
+      'In a thread about embarrassing intimate moments, a user shared what they said during a romantic encounter that was so hilariously wrong it became one of the most-repeated phrases on the platform.',
+    revealContext:
+      '"You like that, you fucking retard?" — a user\'s disastrous attempt at dirty talk became one of AskReddit\'s most legendary and quoted comments.',
+    revealLink: 'https://www.reddit.com/r/AskReddit/comments/1y6lhe/',
+  },
+  {
+    id: 'lc-10',
+    year: 2015,
+    category: 'legendary_comment',
+    promptTitle: 'The Jumper Cables Guy',
+    promptTextRedacted:
+      'A user became famous for posting normal-seeming stories that always ended with the same absurd punchline about their father and a specific item used for punishment. They appeared in random threads for months.',
+    revealContext:
+      'u/rogersimon10 posted comments that always ended with "my dad beat me with jumper cables." The recurring gag in random threads made them a Reddit celebrity.',
+  },
+  {
+    id: 'lc-11',
+    year: 2015,
+    category: 'legendary_comment',
+    promptTitle: 'The Fastest Plane Story',
+    promptTextRedacted:
+      'A former military pilot shared an increasingly dramatic story about requesting speed checks from air traffic control, one-upping every other aircraft until the punchline. It became the most-reposted story on the platform.',
+    revealContext:
+      'The SR-71 Blackbird "ground speed check" story — a pilot requests a speed check, flexes on slower aircraft, and delivers the ultimate punchline. Reposted thousands of times across Reddit.',
+  },
+  {
+    id: 'lc-12',
+    year: 2013,
+    category: 'legendary_comment',
+    promptTitle: 'Maximum Laziness',
+    promptTextRedacted:
+      'In a thread asking about the laziest thing anyone had ever done, a user shared a story about being on a Navy ship and using an incredibly creative method to avoid a minor physical task. The story became legendary.',
+    revealContext:
+      'A Navy sailor threw his trash out a porthole to avoid walking to the trash can, prompting an investigation into who was littering from the ship. The r/AskReddit response became iconic.',
+  },
 
-  // ── platform_event ──
+  // ═══════════════════════════════════════
+  // ── platform_event (8) ──
+  // ═══════════════════════════════════════
   {
     id: 'pe-01',
     year: 2017,
@@ -98,7 +153,7 @@ export const MOMENTS: Moment[] = [
     promptTextRedacted:
       'The platform launched a social experiment where every user could place one colored pixel on a shared canvas every few minutes. Factions formed, art was created, and wars were fought over territory.',
     revealContext:
-      'The first r/place event in April 2017 let millions of users collaboratively create pixel art on a shared 1000x1000 canvas.',
+      'The first r/place event in April 2017 let millions of users collaboratively create pixel art on a shared 1000x1000 canvas. It became one of Reddit\'s most iconic experiments.',
     revealLink: 'https://www.reddit.com/r/place/',
   },
   {
@@ -119,7 +174,7 @@ export const MOMENTS: Moment[] = [
     promptTextRedacted:
       'Inspired by a popular movie villain\'s philosophy, a community decided to ban exactly half of its subscribers at random. Hundreds of thousands were "snapped" away.',
     revealContext:
-      'r/thanosdidnothingwrong banned half its subscribers in "The Snap," inspired by Avengers: Infinity War. Over 300,000 users were banned.',
+      'r/thanosdidnothingwrong banned half its subscribers in "The Snap," inspired by Avengers: Infinity War. Over 300,000 users were banned in one event.',
     revealLink: 'https://www.reddit.com/r/thanosdidnothingwrong/',
   },
   {
@@ -130,51 +185,53 @@ export const MOMENTS: Moment[] = [
     promptTextRedacted:
       'On April 1st, the platform launched a social experiment: a 60-second countdown timer with a single button. Users could press it once, resetting the timer. Factions formed based on when you pressed.',
     revealContext:
-      'The Button was Reddit\'s 2015 April Fools experiment. Users were categorized by the timer value when they pressed, creating color-coded factions.',
+      'The Button was Reddit\'s 2015 April Fools experiment. Users were categorized by the timer value when they pressed, creating color-coded factions and an entire mythology.',
     revealLink: 'https://www.reddit.com/r/thebutton/',
   },
   {
     id: 'pe-05',
-    year: 2016,
+    year: 2013,
     category: 'platform_event',
-    promptTitle: 'Robin: Group Chat Roulette',
+    promptTitle: 'Orangered vs. Periwinkle',
     promptTextRedacted:
-      'The platform\'s April Fools experiment paired users in chat rooms that could vote to grow, stay, or abandon. Rooms merged into larger and larger groups.',
+      'On April 1st, every user was randomly assigned to one of two color-based teams. Items and weapons appeared that could affect other users\' posts. Total chaos ensued across the entire platform.',
     revealContext:
-      'Robin was Reddit\'s 2016 April Fools experiment — a chat room game where groups voted to merge, eventually forming massive chat rooms.',
+      'Reddit\'s 2013 April Fools event split all users into Team Orangered and Team Periwinkle for a site-wide battle with hats and weapons that distorted comments and posts.',
   },
   {
     id: 'pe-06',
-    year: 2019,
+    year: 2023,
     category: 'platform_event',
-    promptTitle: 'Sequence: A Collaborative Story',
+    promptTitle: 'The Canvas: Third Time',
     promptTextRedacted:
-      'The platform launched an April Fools experiment where users voted on short video clips to build a collaborative narrative sequence.',
+      'The beloved pixel art experiment returned for a third time. This time, communities coordinated across multiple platforms and time zones to protect their creations around the clock.',
     revealContext:
-      'r/sequence was Reddit\'s 2019 April Fools event where users voted on video clips to create a community-driven story.',
+      'r/place 2023 was the third iteration. Communities used Discord bots and overlay tools for pixel-perfect coordination, making it the most organized version yet.',
   },
   {
     id: 'pe-07',
-    year: 2020,
+    year: 2010,
     category: 'platform_event',
-    promptTitle: 'Imposter: Social Deduction',
+    promptTitle: 'The Great Migration',
     promptTextRedacted:
-      'The platform\'s April experiment asked users to identify which answer to a prompt was written by an AI bot hidden among human responses.',
+      'A competing platform launched a deeply unpopular redesign, causing a mass exodus of users to this platform. The influx permanently changed the community\'s culture and size.',
     revealContext:
-      'r/Imposter was Reddit\'s 2020 April Fools event — a social deduction game where users tried to spot the AI-generated answer among human ones.',
+      'The Great Digg Migration happened when Digg v4 launched in 2010. Millions of users abandoned Digg for Reddit, transforming Reddit from a niche site into a mainstream platform.',
   },
   {
     id: 'pe-08',
-    year: 2021,
+    year: 2017,
     category: 'platform_event',
-    promptTitle: 'Second: The Pixel Game Returns',
+    promptTitle: 'Battle for the Net',
     promptTextRedacted:
-      'The platform\'s April experiment involved a shared pixel canvas where communities competed to claim territory — but with a twist mechanic that reset areas.',
+      'The platform\'s front page was dominated by a single issue for days as nearly every major community rallied to defend an important internet policy. The coordinated campaign made international news.',
     revealContext:
-      'r/second was Reddit\'s 2021 April Fools event, a variation on the pixel canvas concept with unique gameplay mechanics.',
+      'Reddit\'s Net Neutrality campaign in 2017 saw nearly every subreddit coordinating to protest the FCC\'s proposed repeal. The front page was solid activism for days.',
   },
 
-  // ── meme ──
+  // ═══════════════════════════════════════
+  // ── meme (10) ──
+  // ═══════════════════════════════════════
   {
     id: 'mm-01',
     year: 2012,
@@ -183,7 +240,7 @@ export const MOMENTS: Moment[] = [
     promptTextRedacted:
       'A photo from a race went viral showing a runner who looked absurdly good-looking mid-stride. The image spawned hundreds of photoshop edits and meme templates.',
     revealContext:
-      'Ridiculously Photogenic Guy (Zeddie Little) was photographed during the 2012 Cooper River Bridge Run, and the image became a massive meme on Reddit.',
+      'Ridiculously Photogenic Guy (Zeddie Little) was photographed during the 2012 Cooper River Bridge Run. The image became a massive meme template on Reddit and beyond.',
   },
   {
     id: 'mm-02',
@@ -191,9 +248,9 @@ export const MOMENTS: Moment[] = [
     category: 'meme',
     promptTitle: 'The Confession Animal',
     promptTextRedacted:
-      'An image macro meme using a bear became a way for users to confess embarrassing or controversial opinions. One confession about a roommate went viral and sparked real investigations.',
+      'An image macro using a bear became the go-to way for users to confess embarrassing or controversial opinions. One confession went so dark it sparked real-world investigations.',
     revealContext:
-      'Confession Bear became hugely popular on Reddit\'s AdviceAnimals. One post appeared to confess to murder, leading to media coverage.',
+      'Confession Bear peaked on Reddit\'s r/AdviceAnimals. One post appeared to confess to murder, attracting media coverage and debate about whether it was real.',
   },
   {
     id: 'mm-03',
@@ -201,9 +258,9 @@ export const MOMENTS: Moment[] = [
     category: 'meme',
     promptTitle: 'The Switcharoo Chain',
     promptTextRedacted:
-      'A running joke where users deliberately misidentified who or what was being shown in a photo. Each instance linked back to the previous one, forming a chain thousands of links long.',
+      'A running joke where users deliberately misidentified the subject of a photo. Each instance linked to the previous one, forming an unbroken chain thousands of links long.',
     revealContext:
-      'The "Ah, the ol\' Reddit switcharoo" chain linked thousands of comments where users pretended to misidentify the subject of a photo.',
+      '"Ah, the ol\' Reddit switcharoo" — a chain of linked comments where users pretended to misidentify photo subjects. The chain spans years and thousands of entries.',
     revealLink: 'https://www.reddit.com/r/switcharoo/',
   },
   {
@@ -212,41 +269,83 @@ export const MOMENTS: Moment[] = [
     category: 'meme',
     promptTitle: 'Narwhals at a Specific Time',
     promptTextRedacted:
-      'The community adopted a bizarre passphrase involving a marine animal and a time of day as a way to identify fellow users in real life.',
+      'The community adopted a bizarre passphrase involving a marine animal and a specific time of day as a secret handshake to identify fellow users in the real world.',
     revealContext:
-      '"The narwhal bacons at midnight" became Reddit\'s unofficial real-world identification phrase, widely considered peak early Reddit culture.',
+      '"The narwhal bacons at midnight" — Reddit\'s unofficial real-world identification phrase. Widely considered the peak (and cringe) of early Reddit culture.',
   },
   {
     id: 'mm-05',
     year: 2019,
     category: 'meme',
-    promptTitle: 'Area 51 Raid Plan',
+    promptTitle: 'Raid the Base',
     promptTextRedacted:
-      'A joke event page suggesting people rush a classified military facility went viral. A dedicated community tracked the "planning" and memed relentlessly about it.',
+      'A joke event page suggesting people rush a classified military facility went viral. The platform memed relentlessly about it, and a handful of people actually showed up in the desert.',
     revealContext:
-      'The "Storm Area 51" meme exploded across Reddit in 2019, with r/memes and others generating enormous amounts of content about the planned "raid."',
+      '"Storm Area 51, They Can\'t Stop All of Us" exploded across Reddit in 2019. r/memes generated enormous amounts of content, and about 150 people actually showed up in Nevada.',
   },
   {
     id: 'mm-06',
-    year: 2023,
+    year: 2013,
     category: 'meme',
-    promptTitle: 'AI-Generated Nonsense',
+    promptTitle: 'Sarcastic Self-Congratulation',
     promptTextRedacted:
-      'A community dedicated to content generated by artificial intelligence produced increasingly absurd and surreal images that became widely shared across the platform.',
+      'After a community\'s amateur investigation went horribly wrong, the sarcastic celebration phrase used afterward became one of the platform\'s most enduring self-deprecating memes.',
     revealContext:
-      'Subreddits like r/weirddalle and AI-generated content communities exploded in 2023 as image generation tools became widely accessible.',
+      '"We did it Reddit!" became a sarcastic catchphrase after the Boston bombing misidentification. It\'s still used whenever the community prematurely celebrates something.',
+  },
+  {
+    id: 'mm-07',
+    year: 2012,
+    category: 'meme',
+    promptTitle: 'The Universal Scale',
+    promptTextRedacted:
+      'A user posted a photo with a yellow fruit placed next to an object to show its size. The community latched onto this as the only acceptable unit of measurement on the platform.',
+    revealContext:
+      '"Banana for scale" originated from an Imgur/Reddit post and became the platform\'s universal measurement standard. Any photo needing size context got requests for a banana.',
+  },
+  {
+    id: 'mm-08',
+    year: 2017,
+    category: 'meme',
+    promptTitle: 'NEXT!',
+    promptTextRedacted:
+      'A screenshot from a community group showed a person requesting free transportation for 20 people, then rudely dismissing every helpful suggestion with a single-word reply. The post defined an entire genre.',
+    revealContext:
+      'The "NEXT!" choosy beggar demanded free airport transport for 20 people and rejected every offer. Her aggressive "NEXT!" replies became the mascot of r/ChoosingBeggars.',
+  },
+  {
+    id: 'mm-09',
+    year: 2017,
+    category: 'meme',
+    promptTitle: 'To Be Fair...',
+    promptTextRedacted:
+      'A user posted an earnest defense of a popular animated show, claiming you need a very high IQ to appreciate it. The post was so pretentious it became one of the most-copied pastas on the internet.',
+    revealContext:
+      '"To be fair, you have to have a very high IQ to understand Rick and Morty" — the ultimate copypasta. Originally posted sincerely, it became the go-to parody of intellectual gatekeeping.',
+  },
+  {
+    id: 'mm-10',
+    year: 2013,
+    category: 'meme',
+    promptTitle: 'The Gratitude Edit',
+    promptTextRedacted:
+      'A specific phrase that users would add when their comment received a premium award became so ubiquitous and mocked that the community eventually turned against anyone who used it.',
+    revealContext:
+      '"Edit: Thanks for the gold, kind stranger!" became so overused that it spawned r/AwardSpeechEdits dedicated to mocking it. The backlash made it a meme in itself.',
   },
 
-  // ── controversy ──
+  // ═══════════════════════════════════════
+  // ── controversy (8) ──
+  // ═══════════════════════════════════════
   {
     id: 'cv-01',
     year: 2015,
     category: 'controversy',
     promptTitle: 'The CEO Resignation',
     promptTextRedacted:
-      'After a popular employee was fired, the community erupted in protest. Moderators took major subreddits private, and the interim CEO eventually resigned amid the backlash.',
+      'After a popular employee was fired, the community erupted in protest. Moderators took major communities private, and the interim CEO eventually resigned amid the backlash.',
     revealContext:
-      'The firing of Victoria Taylor led to the 2015 Reddit Blackout. CEO Ellen Pao resigned shortly after, though later revealed she had opposed the firing.',
+      'The firing of Victoria Taylor led to the 2015 Reddit Blackout. CEO Ellen Pao resigned shortly after, though she later revealed she had actually opposed the firing.',
   },
   {
     id: 'cv-02',
@@ -254,9 +353,9 @@ export const MOMENTS: Moment[] = [
     category: 'controversy',
     promptTitle: 'The API Pricing Protest',
     promptTextRedacted:
-      'The platform announced major pricing changes to its developer tools, which would effectively shut down popular third-party mobile apps. Thousands of communities went dark in protest.',
+      'The platform announced major pricing changes to its developer tools, effectively shutting down popular third-party mobile apps. Thousands of communities went dark in the largest protest ever.',
     revealContext:
-      'Reddit\'s 2023 API pricing changes led to a massive subreddit blackout protest and the shutdown of beloved apps like Apollo, RIF, and others.',
+      'Reddit\'s 2023 API pricing changes led to a massive subreddit blackout and the death of beloved apps like Apollo, Reddit is Fun, and Sync.',
   },
   {
     id: 'cv-03',
@@ -274,12 +373,54 @@ export const MOMENTS: Moment[] = [
     category: 'controversy',
     promptTitle: 'The Leaked Photos Scandal',
     promptTextRedacted:
-      'Private photos of celebrities were stolen and shared widely on the platform. The community hosting them was eventually banned after significant media pressure.',
+      'Private photos of celebrities were stolen and shared widely on the platform. The community hosting them was eventually banned after significant media pressure and legal threats.',
     revealContext:
-      'The "Fappening" involved stolen celebrity photos shared via Reddit. The hosting subreddit was banned after public outcry and legal pressure.',
+      'The "Fappening" involved stolen celebrity photos shared via Reddit. The hosting subreddit was banned after public outcry and legal pressure from affected celebrities.',
+  },
+  {
+    id: 'cv-05',
+    year: 2016,
+    category: 'controversy',
+    promptTitle: 'The Admin Who Edited Comments',
+    promptTextRedacted:
+      'The platform\'s CEO was caught secretly editing user comments in a controversial community, replacing mentions of his username with moderators\' names. Trust in the platform was shaken.',
+    revealContext:
+      'CEO Steve Huffman (u/spez) admitted to editing comments in r/the_donald that mentioned his username, sparking a massive trust crisis and the ongoing "f*ck u/spez" meme.',
+  },
+  {
+    id: 'cv-06',
+    year: 2012,
+    category: 'controversy',
+    promptTitle: 'The Unmasked Moderator',
+    promptTextRedacted:
+      'A journalist revealed the real-world identity of a prolific moderator who ran some of the platform\'s most controversial communities. The resulting debate about anonymity vs. accountability divided users.',
+    revealContext:
+      'Gawker journalist Adrian Chen unmasked u/violentacrez, moderator of several controversial subreddits. Reddit briefly banned Gawker links, sparking a major free speech vs. accountability debate.',
+  },
+  {
+    id: 'cv-07',
+    year: 2013,
+    category: 'controversy',
+    promptTitle: 'Losing a Champion',
+    promptTextRedacted:
+      'The platform mourned one of its co-founders, a young tech activist who had fought for internet freedom. His passing at age 26 sparked conversations about justice, mental health, and digital rights.',
+    revealContext:
+      'Aaron Swartz, Reddit co-founder and internet freedom activist, died by suicide in January 2013 while facing federal charges for downloading academic papers. His loss deeply affected the community.',
+  },
+  {
+    id: 'cv-08',
+    year: 2013,
+    category: 'controversy',
+    promptTitle: 'The Fake Celebrity Q&A',
+    promptTextRedacted:
+      'A famous actor did a Q&A that was so obviously handled by a PR team — with a badly photoshopped proof photo — that the community revolted. The backlash made it one of the worst Q&As in history.',
+    revealContext:
+      'Morgan Freeman\'s AMA was widely believed to be answered by a PR rep. The proof photo appeared to show him asleep with a paper on his chest. Answers were generic and the community was furious.',
   },
 
-  // ── subreddit_moment ──
+  // ═══════════════════════════════════════
+  // ── subreddit_moment (14) ──
+  // ═══════════════════════════════════════
   {
     id: 'sm-01',
     year: 2021,
@@ -288,151 +429,356 @@ export const MOMENTS: Moment[] = [
     promptTextRedacted:
       'A community of amateur stock traders collectively invested in a struggling retail company, driving its price up dramatically and causing billions in losses for institutional short sellers.',
     revealContext:
-      'r/wallstreetbets drove the GameStop (GME) short squeeze in January 2021, causing massive losses for hedge funds and mainstream media frenzy.',
+      'r/wallstreetbets drove the GameStop (GME) short squeeze in January 2021, causing massive hedge fund losses and becoming international front-page news.',
     revealLink: 'https://www.reddit.com/r/wallstreetbets/',
   },
   {
     id: 'sm-02',
-    year: 2009,
+    year: 2012,
     category: 'subreddit_moment',
-    promptTitle: 'The Original Ask Community',
+    promptTitle: 'Let\'s Talk About Rampart',
     promptTextRedacted:
-      'One of the platform\'s most popular communities for open-ended questions was created, eventually becoming a default destination for millions of users sharing stories and opinions.',
+      'A major celebrity did a Q&A to promote a new project but gave short, dismissive answers and kept redirecting every question back to their project. The community was not amused.',
     revealContext:
-      'r/AskReddit became one of the largest and most active subreddits, driving much of Reddit\'s comment culture from its early days.',
+      'Woody Harrelson\'s AMA became infamous when he only wanted to discuss his movie "Rampart" and ignored questions. "Let\'s focus on Rampart" became a meme for bad PR.',
   },
   {
     id: 'sm-03',
-    year: 2013,
-    category: 'subreddit_moment',
-    promptTitle: 'Celebrity Q&A Goes Wrong',
-    promptTextRedacted:
-      'A major celebrity did a Q&A session to promote a new project. They gave short, dismissive answers and kept redirecting to their project, angering the community.',
-    revealContext:
-      'Woody Harrelson\'s AMA became infamous when he only wanted to discuss his movie "Rampart" and ignored community questions.',
-  },
-  {
-    id: 'sm-04',
     year: 2012,
     category: 'subreddit_moment',
-    promptTitle: 'The Unexpected Presidential Q&A',
+    promptTitle: 'The Presidential Q&A',
     promptTextRedacted:
-      'A sitting world leader did a surprise Q&A session, breaking platform records for concurrent users and crashing the site temporarily.',
+      'A sitting world leader did a surprise Q&A session, breaking every record for concurrent users and temporarily crashing the entire platform under the traffic.',
     revealContext:
-      'President Obama\'s AMA in August 2012 crashed Reddit\'s servers and became one of the most upvoted posts of its era.',
+      'President Obama\'s AMA in August 2012 crashed Reddit\'s servers and became one of the highest-upvoted posts of its era. He answered questions for about 30 minutes.',
     revealLink: 'https://www.reddit.com/r/IAmA/comments/z1c9z/',
   },
   {
-    id: 'sm-05',
-    year: 2016,
-    category: 'subreddit_moment',
-    promptTitle: 'No Sleep for Horror Fans',
-    promptTextRedacted:
-      'A community dedicated to original horror fiction reached mainstream recognition, with several stories being optioned for TV and film adaptations.',
-    revealContext:
-      'r/nosleep grew into a major creative writing community. Stories like "Penpal" were published as books and others were adapted for the "Channel Zero" TV series.',
-  },
-  {
-    id: 'sm-06',
-    year: 2020,
-    category: 'subreddit_moment',
-    promptTitle: 'Among Us Takes Over',
-    promptTextRedacted:
-      'A social deduction game from 2018 suddenly exploded in popularity, dominating the platform\'s gaming communities with memes, clips, and fan art.',
-    revealContext:
-      'Among Us became a cultural phenomenon in 2020, with r/AmongUs growing rapidly and "sus" entering everyday internet vocabulary.',
-  },
-  {
-    id: 'sm-07',
+    id: 'sm-04',
     year: 2024,
     category: 'subreddit_moment',
     promptTitle: 'The IPO Frenzy',
     promptTextRedacted:
-      'The platform itself went public on the stock market, and its own user communities were split between celebrating and protesting the move.',
+      'The platform itself went public on the stock market. Its own user communities were split between buying shares, protesting the move, and making memes about it.',
     revealContext:
-      'Reddit\'s IPO in March 2024 was heavily discussed on subreddits like r/wallstreetbets, with users both investing in and criticizing the offering.',
+      'Reddit\'s IPO in March 2024 was heavily discussed on r/wallstreetbets and r/stocks. The company was valued at ~$6.4 billion on its first day of trading.',
+  },
+  {
+    id: 'sm-05',
+    year: 2014,
+    category: 'subreddit_moment',
+    promptTitle: 'The Beloved Biologist Gets Banned',
+    promptTextRedacted:
+      'A hugely popular science commenter was caught using multiple accounts to upvote their own comments and downvote rivals. Their sudden ban shocked the entire community.',
+    revealContext:
+      'Unidan, beloved for enthusiastic biology comments, was banned for vote manipulation using alt accounts. The "jackdaw vs crow" argument that exposed it became legendary.',
+    revealLink: 'https://www.reddit.com/r/SubredditDrama/comments/2c9ida/',
+  },
+  {
+    id: 'sm-06',
+    year: 2013,
+    category: 'subreddit_moment',
+    promptTitle: 'The Name Swap',
+    promptTextRedacted:
+      'A community about a recreational plant had its obvious name taken. Enthusiasts of the actual plant had to create a hilariously long-named alternative. Both communities leaned hard into the joke.',
+    revealContext:
+      'r/trees is about marijuana while r/marijuanaenthusiasts is about actual trees. The name swap became one of Reddit\'s most beloved and long-running inside jokes.',
+    revealLink: 'https://www.reddit.com/r/marijuanaenthusiasts/',
+  },
+  {
+    id: 'sm-07',
+    year: 2017,
+    category: 'subreddit_moment',
+    promptTitle: 'The Prequel Takeover',
+    promptTextRedacted:
+      'A community dedicated to a divisive movie trilogy developed such a passionate meme culture that their content regularly dominated the front page. Their catchphrases entered mainstream internet vocabulary.',
+    revealContext:
+      'r/PrequelMemes turned Star Wars prequel dialogue into an art form. "Hello there," "I have the high ground," and "It\'s treason then" became inescapable across all of Reddit.',
+    revealLink: 'https://www.reddit.com/r/PrequelMemes/',
+  },
+  {
+    id: 'sm-08',
+    year: 2012,
+    category: 'subreddit_moment',
+    promptTitle: 'The Chillest Celebrity Q&A',
+    promptTextRedacted:
+      'A famous rapper did a Q&A that was hilariously casual and genuinely fun. He used creative spelling, answered nearly everything, and became one of the platform\'s favorite celebrity guests.',
+    revealContext:
+      'Snoop Dogg\'s (then Snoop Lion) AMA was legendary for its authenticity. He answered hundreds of questions, his spelling was iconic ("81 blunts a day neffew"), and he became a Reddit regular.',
+  },
+  {
+    id: 'sm-09',
+    year: 2016,
+    category: 'subreddit_moment',
+    promptTitle: 'The Debate Star',
+    promptTextRedacted:
+      'A man wearing a distinctive red sweater became an instant celebrity after asking a question during a presidential debate. He did a Q&A the next day, but his post history was then scrutinized.',
+    revealContext:
+      'Ken Bone became an overnight sensation after the 2016 presidential debate. His AMA was popular, but users discovered his Reddit history under his real username, creating awkward headlines.',
+  },
+  {
+    id: 'sm-10',
+    year: 2019,
+    category: 'subreddit_moment',
+    promptTitle: 'Stay Hydrated',
+    promptTextRedacted:
+      'A popular community promoting water consumption was banned due to its offensive name. It was immediately reborn under a family-friendly name and became even more popular.',
+    revealContext:
+      'r/waterniggas was banned in 2019 for its name. It was reborn as r/HydroHomies, which grew even larger and became a wholesome meme community promoting hydration.',
+    revealLink: 'https://www.reddit.com/r/HydroHomies/',
+  },
+  {
+    id: 'sm-11',
+    year: 2022,
+    category: 'subreddit_moment',
+    promptTitle: 'The Marinara Flag',
+    promptTextRedacted:
+      'A user in a relationship advice community used a hilariously wrong food-based term instead of the correct phrase for a warning sign. The mistake went so viral it was adopted as official community slang.',
+    revealContext:
+      'A user on r/AmItheAsshole wrote "marinara flag" instead of "red flag." The community loved it so much that marinara flag (red) and pesto flag (green) became actual subreddit terminology.',
+  },
+  {
+    id: 'sm-12',
+    year: 2013,
+    category: 'subreddit_moment',
+    promptTitle: 'The Unhinged Baseball Star',
+    promptTextRedacted:
+      'A former professional athlete did a Q&A that went completely off the rails. Their bizarre, unfiltered answers about time travel, aliens, and personal grudges made it an all-time classic.',
+    revealContext:
+      'Jose Canseco\'s AMA was hilariously unhinged — he discussed time travel, claimed to have evidence of aliens, and answered questions with wild sincerity. It\'s considered peak AMA entertainment.',
+  },
+  {
+    id: 'sm-13',
+    year: 2023,
+    category: 'subreddit_moment',
+    promptTitle: 'The Most Hated Celebrity Q&A',
+    promptTextRedacted:
+      'A talk show host attempted a Q&A session but was met with overwhelmingly hostile questions about their alleged rude behavior in real life. Nearly every response was a complaint or insult.',
+    revealContext:
+      'James Corden\'s AMA became a roast session. Users flooded it with stories of his rude behavior. The ratio of hostile to friendly questions made it one of the most brutal AMAs ever.',
+  },
+  {
+    id: 'sm-14',
+    year: 2020,
+    category: 'subreddit_moment',
+    promptTitle: 'Live on Camera',
+    promptTextRedacted:
+      'During a period when millions were working from home, a user accidentally went viral on a platform livestream for an embarrassing incident visible to their entire community.',
+    revealContext:
+      'Reddit Public Access Network (RPAN) launched during COVID lockdowns and became a hub for unexpected viral moments, from musicians to pets to accidental broadcasts.',
   },
 
-  // ── product_feature ──
+  // ═══════════════════════════════════════
+  // ── viral_post (20) ──
+  // ═══════════════════════════════════════
   {
-    id: 'pf-01',
+    id: 'vp-01',
+    year: 2009,
+    category: 'viral_post',
+    promptTitle: 'Please Ignore This Post',
+    promptTextRedacted:
+      'A user made a mundane two-word administrative post with a simple request. The community did the exact opposite, upvoting it to the top purely out of defiance.',
+    revealContext:
+      '"test post please ignore" by u/qgyh2 became one of Reddit\'s most upvoted posts ever — the community upvoted it specifically because it asked them not to.',
+    revealLink: 'https://www.reddit.com/r/pics/comments/92dd8/',
+  },
+  {
+    id: 'vp-02',
     year: 2017,
-    category: 'product_feature',
-    promptTitle: 'Profile Pages and Following',
+    category: 'viral_post',
+    promptTitle: 'A Dark Choice',
     promptTextRedacted:
-      'The platform introduced user profile pages and a following system, moving slightly toward a social-media feel. The community had mixed reactions.',
+      'In a thread asking users who they\'d choose to be with if they could pick anyone, one user gave a hilariously dark reply about another commenter\'s deceased spouse. It became one of the most-awarded comments ever.',
     revealContext:
-      'Reddit launched user profile pages in 2017, allowing users to post directly to their profiles — a controversial move toward social media norms.',
+      '"I also choose this guy\'s dead wife" — a perfectly timed dark joke in an otherwise wholesome AskReddit thread. It became one of Reddit\'s most legendary one-liner comments.',
+    revealLink: 'https://www.reddit.com/r/AskReddit/comments/5c79n0/',
   },
   {
-    id: 'pf-02',
+    id: 'vp-03',
     year: 2018,
-    category: 'product_feature',
-    promptTitle: 'The Redesign',
+    category: 'viral_post',
+    promptTitle: 'The Family Bathroom Tool',
     promptTextRedacted:
-      'The platform launched a major visual overhaul after years of the same look. Many long-time users were unhappy and continued using the old version.',
+      'A user shared a confession about discovering that their family\'s unusual bathroom habit — involving a specific kitchen utensil — was not, in fact, something every family did.',
     revealContext:
-      'Reddit\'s 2018 redesign replaced the classic UI. Many users switched to old.reddit.com, which remains available to this day.',
+      'The "poop knife" story: a family kept a knife to cut large stools. The user didn\'t realize this wasn\'t universal until visiting a friend\'s house. The term entered Reddit\'s permanent vocabulary.',
+    revealLink: 'https://www.reddit.com/r/confession/comments/7p8puq/',
   },
   {
-    id: 'pf-03',
-    year: 2020,
-    category: 'product_feature',
-    promptTitle: 'Live Audio Rooms',
+    id: 'vp-04',
+    year: 2014,
+    category: 'viral_post',
+    promptTitle: 'The World\'s Dumbest Student',
     promptTextRedacted:
-      'Following a trend started by another app, the platform added live audio conversation rooms where users could join and talk in real time.',
+      'A teacher shared a detailed story about their most clueless student ever. The student didn\'t know cats and dogs were different animals, thought you could photocopy money, and much more.',
     revealContext:
-      'Reddit Talk launched as Reddit\'s answer to Clubhouse, allowing subreddit moderators to host live audio conversations.',
+      'The legendary "Kevin" story from r/AskReddit listed dozens of impossibly stupid things one student did. "Kevin" became Reddit slang for someone incredibly unintelligent.',
+    revealLink: 'https://www.reddit.com/r/AskReddit/comments/219w2o/',
   },
   {
-    id: 'pf-04',
-    year: 2010,
-    category: 'product_feature',
-    promptTitle: 'Premium Membership Launches',
+    id: 'vp-05',
+    year: 2012,
+    category: 'viral_post',
+    promptTitle: 'The Greatest Name Ever Given',
     promptTextRedacted:
-      'The platform introduced a premium membership that gave users special features and an ad-free experience. Purchasing it for others became a way to reward great posts.',
+      'In a thread asking for the best name for a child, a user wrote an entire short story about a boy with an absurd name who lived an impossibly epic life from birth to legend.',
     revealContext:
-      'Reddit Gold launched in 2010, allowing users to "gild" posts and comments. It was later rebranded to Reddit Premium with coins and awards.',
+      '"Streetlamp Le Moose" — a full short story written in an AskReddit thread about a character with a ridiculous name who became universally beloved. One of Reddit\'s greatest creative writing moments.',
+    revealLink: 'https://www.reddit.com/r/AskReddit/comments/jlao6/',
   },
   {
-    id: 'pf-05',
+    id: 'vp-06',
+    year: 2014,
+    category: 'viral_post',
+    promptTitle: 'The Perfect Pun',
+    promptTextRedacted:
+      'In a philosophy-themed thread, a user delivered a pun involving a famous philosopher and a horse so perfectly crafted it was widely voted the best wordplay in the platform\'s entire history.',
+    revealContext:
+      '"Putting Descartes before the horse" — a play on "putting the cart before the horse" in a philosophy discussion. Widely considered Reddit\'s single greatest pun.',
+  },
+  {
+    id: 'vp-07',
+    year: 2014,
+    category: 'viral_post',
+    promptTitle: 'The Most Unusual AMA',
+    promptTextRedacted:
+      'A user with an extremely rare anatomical condition did a Q&A that became one of the most-viewed posts in the platform\'s history. The community had... a lot of questions.',
+    revealContext:
+      'The "Double Dick Dude" AMA by a user claiming to have diphallia became one of Reddit\'s most legendary and viewed AMAs. It was later revealed to be largely fabricated.',
+  },
+  {
+    id: 'vp-08',
+    year: 2013,
+    category: 'viral_post',
+    promptTitle: 'The Operating Room Horror',
+    promptTextRedacted:
+      'A medical professional shared a story about a surgery gone nightmarishly wrong. The graphic details of what happened when they made the first incision made it the most infamous medical story on the platform.',
+    revealContext:
+      'The "Swamps of Dagobah" story from an OR nurse described a horrifying abscess drainage. Named after the Star Wars swamp, it remains one of Reddit\'s most notorious gross-out stories.',
+    revealLink: 'https://www.reddit.com/r/AskReddit/comments/xo41d/',
+  },
+  {
+    id: 'vp-09',
+    year: 2017,
+    category: 'viral_post',
+    promptTitle: 'The Tropical Fruit Incident',
+    promptTextRedacted:
+      'A user confessed to a deeply regrettable series of increasingly poor decisions involving a tropical fruit over the course of several days. Things got much, much worse each day.',
+    revealContext:
+      'The coconut TIFU described a user\'s ill-advised encounters with a coconut over multiple days that ended in horror. It spawned an entire wave of fruit-related TIFU copycats.',
+    revealLink: 'https://www.reddit.com/r/tifu/comments/6rr6ay/',
+  },
+  {
+    id: 'vp-10',
+    year: 2012,
+    category: 'viral_post',
+    promptTitle: 'The Accidental Insult',
+    promptTextRedacted:
+      'A user shared a story about trying to say two things at once during a sports game — an apology and a taunt. What came out was a perfectly fused phrase that became an internet legend.',
+    revealContext:
+      '"Are you fucking sorry?!" — combining "Are you okay?" and "You\'re fucking out!" into one accidental phrase. Originally from a greentext, it became one of Reddit\'s most-shared stories.',
+  },
+  {
+    id: 'vp-11',
+    year: 2015,
+    category: 'viral_post',
+    promptTitle: 'What Is This Vegetable?',
+    promptTextRedacted:
+      'A user confessed that at dinner with their partner\'s parents, they pretended not to know what a very common food was. They committed so hard to the bit that the evening was completely ruined.',
+    revealContext:
+      'The "What\'s a potato?" TIFU: a user pretended to have never seen a potato at their girlfriend\'s parents\' dinner, doubled down repeatedly, and was eventually kicked out of the house.',
+    revealLink: 'https://www.reddit.com/r/tifu/comments/2tdbig/',
+  },
+  {
+    id: 'vp-12',
+    year: 2009,
+    category: 'viral_post',
+    promptTitle: 'The Candy Horror',
+    promptTextRedacted:
+      'A user shared a horrifying story involving a piece of candy during an intimate moment that turned out to be something far worse. It became one of the most notorious stories in platform history.',
+    revealContext:
+      'The Jolly Rancher story from r/AskReddit involved a candy discovery during an intimate moment that... wasn\'t a candy. A cornerstone of the Reddit "Museum of Filth."',
+  },
+  {
+    id: 'vp-13',
+    year: 2012,
+    category: 'viral_post',
+    promptTitle: 'The Shoebox',
+    promptTextRedacted:
+      'A user revealed that they had been using a specific container for a very personal purpose for years, then posted a photo of the horrifying result. The image haunted the platform.',
+    revealContext:
+      'The "cumbox" post showed a shoebox used for... personal purposes over many years. The photo of the deteriorated box became one of the most notorious images in Reddit history.',
+  },
+  {
+    id: 'vp-14',
     year: 2016,
-    category: 'product_feature',
-    promptTitle: 'The Official Mobile App',
+    category: 'viral_post',
+    promptTitle: 'The Window Steak',
     promptTextRedacted:
-      'The platform released its own mobile app for the first time, offering free premium membership to early adopters. Third-party apps had dominated mobile access until then.',
+      'A user confessed that at a dinner party, they panicked about an overcooked piece of meat and disposed of it by launching it through a window. Their partner was not amused.',
     revealContext:
-      'Reddit launched its official mobile app in 2016, giving 3 months of Gold to early downloaders. Apps like Alien Blue (acquired by Reddit) paved the way.',
+      'A TIFU about a user who threw a steak out their apartment window to hide it from dinner guests, then had to explain the missing food and the meat on the street below.',
+    revealLink: 'https://www.reddit.com/r/tifu/comments/3im341/',
   },
   {
-    id: 'pf-06',
-    year: 2022,
-    category: 'product_feature',
-    promptTitle: 'Collectible Digital Avatars',
+    id: 'vp-15',
+    year: 2015,
+    category: 'viral_post',
+    promptTitle: 'The Suspicious Texts',
     promptTextRedacted:
-      'The platform introduced blockchain-based collectible profile pictures that users could buy, trade, and display. The rollout was met with both enthusiasm and skepticism.',
+      'A user posted a multi-part saga about discovering suspicious messages on their spouse\'s phone. The community followed along in real-time as the story unfolded with twists and turns.',
     revealContext:
-      'Reddit launched Collectible Avatars (NFTs) in July 2022, later distributing free ones widely. Despite initial backlash, millions were claimed.',
+      'The "Jenny" TIFU saga — a user live-updated their discovery of a spouse\'s infidelity via text messages. The multi-part story captivated millions before being questioned as possibly fictional.',
   },
   {
-    id: 'pf-07',
-    year: 2023,
-    category: 'product_feature',
-    promptTitle: 'Contributor Points Sunset',
+    id: 'vp-16',
+    year: 2018,
+    category: 'viral_post',
+    promptTitle: 'Smells Like Victory',
     promptTextRedacted:
-      'The platform discontinued a community-specific token system that had been running as a limited experiment in select communities.',
+      'In a thread about things that taste better than they smell, one user gave a single-word answer that was so unexpected and clever it became one of the highest-upvoted comments of all time.',
     revealContext:
-      'Reddit shut down Community Points (including r/CryptoCurrency\'s MOONs) in 2023, ending its blockchain-based community token experiment.',
+      '"What tastes better than it smells?" — the top answer was simply "Feet." The lateral thinking needed to arrive at this answer made it legendary.',
   },
   {
-    id: 'pf-08',
-    year: 2024,
-    category: 'product_feature',
-    promptTitle: 'Developer Platform Goes Wide',
+    id: 'vp-17',
+    year: 2010,
+    category: 'viral_post',
+    promptTitle: 'The Three-Step Breakup Plan',
     promptTextRedacted:
-      'The platform expanded its developer tools program, allowing anyone to build interactive experiences that live inside posts and communities.',
+      'A comment listing exactly three pieces of advice for anyone going through a breakup became so widely repeated that it turned into a meme format used across the entire platform for years.',
     revealContext:
-      'Reddit\'s Developer Platform (Devvit) opened broadly in 2024, enabling community-built apps, games, and interactive experiences within Reddit.',
+      '"Delete Facebook, hit the gym, lawyer up" — originally sincere relationship advice that became the go-to sarcastic response to any relationship problem on Reddit.',
+  },
+  {
+    id: 'vp-18',
+    year: 2012,
+    category: 'viral_post',
+    promptTitle: 'The Dog Named After a Cheese',
+    promptTextRedacted:
+      'A multi-part saga involving a user, their pet, and their son\'s disturbing behavior toward the animal unfolded over several posts. The community was deeply divided on how to respond.',
+    revealContext:
+      'The "Colby" saga described a father discovering his son was abusing the family dog. The multi-update story divided the community and "Colby 2012" became a dark Reddit catchphrase.',
+  },
+  {
+    id: 'vp-19',
+    year: 2019,
+    category: 'viral_post',
+    promptTitle: 'The Beans on the Plane',
+    promptTextRedacted:
+      'A user confessed to eating an entire portion of a specific food — in a very conspicuous way — during a flight, earning them judgmental stares and a reaction from a nearby child that became the punchline.',
+    revealContext:
+      'A user ate an entire can of beans during a movie screening/flight and a kid loudly said "this n**** eating beans!" The embarrassment story became a widely shared meme.',
+  },
+  {
+    id: 'vp-20',
+    year: 2011,
+    category: 'viral_post',
+    promptTitle: 'The Ice Soap and 2am Chili',
+    promptTextRedacted:
+      'Within the same week, two users independently posted oddly specific life hacks that the community latched onto as a surreal duo. One involved frozen hygiene, the other a late-night recipe.',
+    revealContext:
+      'The "2am Chili" comic and "Ice Soap" posts went viral the same week on Reddit, becoming an absurd pair that the community couldn\'t stop referencing together.',
   },
 ];
 

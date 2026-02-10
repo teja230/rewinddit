@@ -2,16 +2,17 @@ import { useCallback, useEffect, useState } from 'react';
 import type { PuzzleTodayResponse, SubmitResult } from '../../shared/api';
 import { trpc } from '../trpc';
 
-export type GamePhase = 'loading' | 'quiz' | 'results';
+export type GamePhase = 'loading' | 'quiz' | 'revealing' | 'results';
 
 type GameState = {
   phase: GamePhase;
   puzzle: PuzzleTodayResponse | null;
   guesses: Record<string, number>;
-  touched: Set<string>; // tracks which cards the user has interacted with
+  touched: Set<string>;
   result: SubmitResult | null;
   submitting: boolean;
   error: string | null;
+  currentCard: number;
 };
 
 export const useGame = () => {
@@ -23,6 +24,7 @@ export const useGame = () => {
     result: null,
     submitting: false,
     error: null,
+    currentCard: 0,
   });
 
   // Load today's puzzle on mount via tRPC
@@ -44,6 +46,7 @@ export const useGame = () => {
             result: data.previousResult,
             submitting: false,
             error: null,
+            currentCard: 0,
           });
         } else {
           setState({
@@ -54,6 +57,7 @@ export const useGame = () => {
             result: null,
             submitting: false,
             error: null,
+            currentCard: 0,
           });
         }
       } catch (err) {
@@ -80,6 +84,27 @@ export const useGame = () => {
     });
   }, []);
 
+  const goNext = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      currentCard: Math.min(prev.currentCard + 1, 4),
+    }));
+  }, []);
+
+  const goPrev = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      currentCard: Math.max(prev.currentCard - 1, 0),
+    }));
+  }, []);
+
+  const goToCard = useCallback((index: number) => {
+    setState((prev) => ({
+      ...prev,
+      currentCard: Math.max(0, Math.min(4, index)),
+    }));
+  }, []);
+
   const submit = useCallback(async () => {
     setState((prev) => ({ ...prev, submitting: true, error: null }));
     try {
@@ -93,7 +118,7 @@ export const useGame = () => {
 
       setState((prev) => ({
         ...prev,
-        phase: 'results',
+        phase: 'revealing',
         result,
         submitting: false,
       }));
@@ -106,6 +131,10 @@ export const useGame = () => {
       }));
     }
   }, [state]);
+
+  const finishReveal = useCallback(() => {
+    setState((prev) => ({ ...prev, phase: 'results' }));
+  }, []);
 
   const allGuessed = state.puzzle
     ? state.puzzle.moments.every((m) => state.touched.has(m.id))
@@ -120,7 +149,12 @@ export const useGame = () => {
     submitting: state.submitting,
     error: state.error,
     allGuessed,
+    currentCard: state.currentCard,
     setGuess,
     submit,
+    goNext,
+    goPrev,
+    goToCard,
+    finishReveal,
   } as const;
 };

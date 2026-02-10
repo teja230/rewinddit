@@ -1,5 +1,6 @@
 import { getAllMomentIds, getMomentById } from '../data/moments';
 import type { MomentPrompt, QuestionResult } from '../../shared/api';
+import { KEY_PREFIX } from './redisKeys';
 
 // ── Deterministic PRNG (mulberry32) ──
 
@@ -42,7 +43,7 @@ export type DailyPuzzle = {
 };
 
 export function generateDailyPuzzle(date: string): DailyPuzzle {
-  const seed = `rewinddit:${date}`;
+  const seed = `${KEY_PREFIX}:${date}`;
   const seedNum = hashString(seed);
   const rng = mulberry32(seedNum);
 

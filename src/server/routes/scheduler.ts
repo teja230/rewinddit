@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { redis } from '@devvit/web/server';
 import { generateDailyPuzzle, getTodayUTC } from '../core/puzzle';
+import { K } from '../core/redisKeys';
 
 export const scheduler = new Hono();
 
@@ -8,7 +9,7 @@ export const scheduler = new Hono();
 scheduler.post('/rewinddit-daily-seed', async (c) => {
   try {
     const today = getTodayUTC();
-    const key = `rewinddit:puzzle:${today}`;
+    const key = K.puzzle(today);
 
     const existing = await redis.get(key);
     if (existing) {

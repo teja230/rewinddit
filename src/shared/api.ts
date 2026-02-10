@@ -5,7 +5,7 @@ export type MomentCategory =
   | 'meme'
   | 'controversy'
   | 'subreddit_moment'
-  | 'product_feature';
+  | 'viral_post';
 
 // ── Public moment (what the client sees before reveal) ──
 export type MomentPrompt = {

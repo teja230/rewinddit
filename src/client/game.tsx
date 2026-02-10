@@ -1,6 +1,6 @@
 import './index.css';
 
-import { StrictMode, useState, useCallback } from 'react';
+import { StrictMode, useState, useCallback, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { showToast } from '@devvit/web/client';
 import { useGame } from './hooks/useGame';
@@ -8,6 +8,7 @@ import type {
   MomentPrompt,
   QuestionResult,
   LeaderboardEntry,
+  SubmitResult,
 } from '../shared/api';
 
 // ── Category badge colors ──
@@ -18,7 +19,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   meme: 'bg-pink-100 text-pink-800',
   controversy: 'bg-red-100 text-red-800',
   subreddit_moment: 'bg-green-100 text-green-800',
-  product_feature: 'bg-purple-100 text-purple-800',
+  viral_post: 'bg-purple-100 text-purple-800',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -27,24 +28,41 @@ const CATEGORY_LABELS: Record<string, string> = {
   meme: 'Meme',
   controversy: 'Controversy',
   subreddit_moment: 'Subreddit Moment',
-  product_feature: 'Product Feature',
+  viral_post: 'Viral Post',
 };
 
-// ── Points scale display ──
+// ── Helpers ──
 
-const POINTS_SCALE = [
-  { delta: 'Exact', points: 100 },
-  { delta: '1 yr', points: 90 },
-  { delta: '2 yr', points: 70 },
-  { delta: '3 yr', points: 50 },
-  { delta: '4 yr', points: 30 },
-  { delta: '5 yr', points: 15 },
-  { delta: '6+ yr', points: 5 },
-];
+function getScoreEmoji(delta: number): string {
+  if (delta === 0) return '\ud83c\udfaf';
+  if (delta === 1) return '\ud83d\udd25';
+  if (delta <= 2) return '\ud83d\udcaa';
+  if (delta <= 3) return '\ud83d\ude0f';
+  if (delta <= 5) return '\ud83d\ude2c';
+  return '\ud83d\udca9';
+}
 
-// ── Year Slider Component ──
+function getShareSquare(delta: number): string {
+  if (delta === 0) return '\ud83d\udfe2';
+  if (delta <= 1) return '\ud83d\udfe9';
+  if (delta <= 2) return '\ud83d\udfe8';
+  if (delta <= 3) return '\ud83d\udfe7';
+  if (delta <= 5) return '\ud83d\udfe5';
+  return '\u2b1b';
+}
 
-function YearSlider({
+function getScoreReaction(score: number): { text: string; emoji: string } {
+  if (score >= 480) return { text: 'Reddit Historian!', emoji: '\ud83c\udfc6' };
+  if (score >= 400) return { text: 'True Redditor!', emoji: '\ud83e\udde0' };
+  if (score >= 300) return { text: 'Nice Memory!', emoji: '\ud83d\udc4d' };
+  if (score >= 200) return { text: 'Getting There!', emoji: '\ud83d\ude04' };
+  if (score >= 100) return { text: 'Casual Scroller', emoji: '\ud83d\ude05' };
+  return { text: 'Lurker Detected', emoji: '\ud83d\udc40' };
+}
+
+// ── Year Picker ──
+
+function YearPicker({
   momentId,
   year,
   minYear,
@@ -59,49 +77,91 @@ function YearSlider({
   isTouched: boolean;
   onChange: (id: string, year: number) => void;
 }) {
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const yearRef = useRef(year);
+
+  useEffect(() => {
+    yearRef.current = year;
+  }, [year]);
+
+  const stopIncrement = useCallback(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    intervalRef.current = null;
+    timeoutRef.current = null;
+  }, []);
+
+  const startIncrement = useCallback(
+    (direction: 1 | -1) => {
+      const next = Math.max(minYear, Math.min(maxYear, yearRef.current + direction));
+      onChange(momentId, next);
+      timeoutRef.current = setTimeout(() => {
+        intervalRef.current = setInterval(() => {
+          const n = Math.max(minYear, Math.min(maxYear, yearRef.current + direction));
+          onChange(momentId, n);
+        }, 100);
+      }, 400);
+    },
+    [momentId, minYear, maxYear, onChange]
+  );
+
+  useEffect(() => {
+    return () => stopIncrement();
+  }, [stopIncrement]);
+
   return (
-    <div className="flex items-center gap-2 w-full mt-2">
-      <button
-        className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 font-bold text-lg flex items-center justify-center shrink-0 cursor-pointer hover:bg-gray-300 active:bg-gray-400 transition-colors"
-        onClick={() => onChange(momentId, Math.max(minYear, year - 1))}
-        aria-label="Decrease year"
+    <div className="flex flex-col items-center gap-3 w-full mt-4">
+      <div
+        className={`text-5xl font-black tabular-nums transition-all duration-150 ${isTouched ? 'text-[#d93900]' : 'text-gray-300'}`}
       >
-        -
-      </button>
-      <div className="flex-1 flex flex-col items-center">
-        <span className={`text-lg font-bold tabular-nums ${isTouched ? 'text-[#d93900]' : 'text-gray-400'}`}>
-          {isTouched ? year : 'Pick a year'}
-        </span>
+        {isTouched ? year : '????'}
+      </div>
+
+      <div className="flex items-center gap-3 w-full">
+        <button
+          className="w-14 h-14 rounded-2xl bg-gray-100 text-gray-700 font-bold text-2xl flex items-center justify-center shrink-0 cursor-pointer hover:bg-gray-200 active:bg-gray-300 active:scale-95 transition-all select-none"
+          onPointerDown={() => startIncrement(-1)}
+          onPointerUp={stopIncrement}
+          onPointerLeave={stopIncrement}
+          aria-label="Decrease year"
+        >
+          -
+        </button>
+
         <input
           type="range"
           min={minYear}
           max={maxYear}
           value={year}
           onChange={(e) => onChange(momentId, parseInt(e.target.value))}
-          className={`w-full h-2 cursor-pointer ${isTouched ? 'accent-[#d93900]' : 'accent-gray-300'}`}
+          className="flex-1 h-2 cursor-pointer"
           step={1}
         />
-        <div className="flex justify-between w-full text-xs text-gray-400 mt-0.5">
-          <span>{minYear}</span>
-          <span>{maxYear}</span>
-        </div>
+
+        <button
+          className="w-14 h-14 rounded-2xl bg-gray-100 text-gray-700 font-bold text-2xl flex items-center justify-center shrink-0 cursor-pointer hover:bg-gray-200 active:bg-gray-300 active:scale-95 transition-all select-none"
+          onPointerDown={() => startIncrement(1)}
+          onPointerUp={stopIncrement}
+          onPointerLeave={stopIncrement}
+          aria-label="Increase year"
+        >
+          +
+        </button>
       </div>
-      <button
-        className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 font-bold text-lg flex items-center justify-center shrink-0 cursor-pointer hover:bg-gray-300 active:bg-gray-400 transition-colors"
-        onClick={() => onChange(momentId, Math.min(maxYear, year + 1))}
-        aria-label="Increase year"
-      >
-        +
-      </button>
+
+      <div className="flex justify-between w-full text-xs text-gray-400 px-16">
+        <span>{minYear}</span>
+        <span>{maxYear}</span>
+      </div>
     </div>
   );
 }
 
-// ── Quiz Card Component ──
+// ── Quiz Card ──
 
 function QuizCard({
   moment,
-  index,
   year,
   minYear,
   maxYear,
@@ -109,29 +169,35 @@ function QuizCard({
   onChange,
 }: {
   moment: MomentPrompt;
-  index: number;
   year: number;
   minYear: number;
   maxYear: number;
   isTouched: boolean;
   onChange: (id: string, year: number) => void;
 }) {
-  const catColor = CATEGORY_COLORS[moment.category] ?? 'bg-gray-100 text-gray-700';
+  const catColor =
+    CATEGORY_COLORS[moment.category] ?? 'bg-gray-100 text-gray-700';
   const catLabel = CATEGORY_LABELS[moment.category] ?? moment.category;
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border p-4 transition-all ${isTouched ? 'border-[#d93900]/30' : 'border-gray-200'}`}>
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-sm font-semibold text-gray-400">#{index + 1}</span>
-        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${catColor}`}>
+    <div
+      className="bg-white rounded-2xl shadow-md border border-gray-100 p-5"
+      style={{ animation: 'slideIn 0.3s ease-out' }}
+    >
+      <div className="mb-3">
+        <span
+          className={`text-xs font-semibold px-2.5 py-1 rounded-full ${catColor}`}
+        >
           {catLabel}
         </span>
       </div>
-      <h3 className="font-semibold text-gray-900 mb-1">{moment.promptTitle}</h3>
+      <h3 className="font-bold text-gray-900 text-lg mb-2">
+        {moment.promptTitle}
+      </h3>
       <p className="text-sm text-gray-600 leading-relaxed">
         {moment.promptTextRedacted}
       </p>
-      <YearSlider
+      <YearPicker
         momentId={moment.id}
         year={year}
         minYear={minYear}
@@ -143,26 +209,200 @@ function QuizCard({
   );
 }
 
-// ── Result Card Component ──
+// ── Progress Dots ──
 
-function ResultCard({
-  q,
-  index,
-  isOpen,
-  onToggle,
+function ProgressDots({
+  total,
+  current,
+  touched,
+  momentIds,
+  onDotClick,
 }: {
-  q: QuestionResult;
-  index: number;
-  isOpen: boolean;
-  onToggle: () => void;
+  total: number;
+  current: number;
+  touched: Set<string>;
+  momentIds: string[];
+  onDotClick: (index: number) => void;
 }) {
-  const deltaColor =
-    q.delta === 0
-      ? 'text-green-600'
-      : q.delta <= 2
-        ? 'text-yellow-600'
-        : 'text-red-500';
+  return (
+    <div className="flex items-center justify-center gap-2.5 mb-4">
+      {Array.from({ length: total }, (_, i) => {
+        const isActive = i === current;
+        const isDone = momentIds[i] ? touched.has(momentIds[i]) : false;
+        return (
+          <button
+            key={i}
+            onClick={() => onDotClick(i)}
+            className={`rounded-full transition-all duration-200 cursor-pointer ${
+              isActive
+                ? 'w-3.5 h-3.5 bg-[#d93900] ring-2 ring-[#d93900]/30'
+                : isDone
+                  ? 'w-3 h-3 bg-[#d93900]/50'
+                  : 'w-3 h-3 bg-gray-200'
+            }`}
+            aria-label={`Go to question ${i + 1}`}
+          />
+        );
+      })}
+    </div>
+  );
+}
 
+// ── Reveal Screen ──
+
+function RevealScreen({
+  result,
+  onComplete,
+}: {
+  result: SubmitResult;
+  onComplete: () => void;
+}) {
+  const [revealedCount, setRevealedCount] = useState(0);
+
+  useEffect(() => {
+    if (revealedCount < result.perQuestion.length) {
+      const timer = setTimeout(() => {
+        setRevealedCount((c) => c + 1);
+      }, 700);
+      return () => clearTimeout(timer);
+    } else {
+      const timer = setTimeout(onComplete, 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [revealedCount, result.perQuestion.length, onComplete]);
+
+  const runningTotal = result.perQuestion
+    .slice(0, revealedCount)
+    .reduce((s, q) => s + q.points, 0);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-lg mx-auto px-4 py-6">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Revealing...</h1>
+        </div>
+
+        <div className="space-y-3">
+          {result.perQuestion.map((q, i) => {
+            if (i >= revealedCount) return null;
+            const emoji = getScoreEmoji(q.delta);
+            const pointsColor =
+              q.points >= 70
+                ? 'text-green-600'
+                : q.points >= 30
+                  ? 'text-yellow-600'
+                  : 'text-red-500';
+
+            return (
+              <div
+                key={q.id}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4"
+                style={{ animation: 'popIn 0.4s ease-out' }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{emoji}</span>
+                    <div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-gray-500">Guessed</span>
+                        <span className="font-bold">{q.guess}</span>
+                        <span className="text-gray-300">|</span>
+                        <span className="text-gray-500">Actual</span>
+                        <span className="font-bold">{q.actual}</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {q.delta === 0
+                          ? 'Nailed it!'
+                          : `${q.delta} year${q.delta > 1 ? 's' : ''} off`}
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`text-xl font-black ${pointsColor}`}>
+                    +{q.points}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {revealedCount > 0 && (
+          <div
+            className="text-center mt-5"
+            style={{ animation: 'countUp 0.3s ease-out' }}
+          >
+            <span className="text-4xl font-black text-gray-900">
+              {runningTotal}
+            </span>
+            <span className="text-lg text-gray-400">/500</span>
+          </div>
+        )}
+
+        {revealedCount < result.perQuestion.length && (
+          <button
+            className="w-full mt-4 py-2 text-sm text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
+            onClick={onComplete}
+          >
+            Skip to results &rarr;
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Score Ring ──
+
+function ScoreRing({ score, maxScore }: { score: number; maxScore: number }) {
+  const percent = score / maxScore;
+  const circumference = 2 * Math.PI * 54;
+  const offset = circumference * (1 - percent);
+  const color =
+    percent >= 0.7 ? '#16a34a' : percent >= 0.4 ? '#ca8a04' : '#ef4444';
+  const reaction = getScoreReaction(score);
+
+  return (
+    <div className="flex flex-col items-center">
+      <div className="relative w-36 h-36">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+          <circle
+            cx="60"
+            cy="60"
+            r="54"
+            fill="none"
+            stroke="#e5e7eb"
+            strokeWidth="8"
+          />
+          <circle
+            cx="60"
+            cy="60"
+            r="54"
+            fill="none"
+            stroke={color}
+            strokeWidth="8"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            style={{ transition: 'stroke-dashoffset 1s ease-out' }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-3xl font-black text-gray-900">{score}</span>
+          <span className="text-xs text-gray-400">/500</span>
+        </div>
+      </div>
+      <div className="mt-2 text-center">
+        <span className="text-2xl">{reaction.emoji}</span>
+        <p className="font-bold text-gray-900 mt-1">{reaction.text}</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Result Card ──
+
+function ResultCard({ q }: { q: QuestionResult }) {
+  const emoji = getScoreEmoji(q.delta);
   const pointsColor =
     q.points >= 70
       ? 'text-green-600'
@@ -171,56 +411,45 @@ function ResultCard({
         : 'text-red-500';
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all">
-      <button
-        className="w-full p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
-        onClick={onToggle}
-      >
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold text-gray-400">#{index + 1}</span>
-          <div className="text-left">
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-gray-900">
-                {q.guess}
-              </span>
+          <span className="text-2xl">{emoji}</span>
+          <div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="font-bold">{q.guess}</span>
               <span className="text-gray-400">vs</span>
-              <span className="font-bold text-gray-900">{q.actual}</span>
+              <span className="font-bold">{q.actual}</span>
             </div>
+            <p className="text-xs text-gray-400">
+              {q.delta === 0
+                ? 'Exact match!'
+                : `${q.delta} year${q.delta > 1 ? 's' : ''} off`}
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className={`text-sm font-medium ${deltaColor}`}>
-            {q.delta === 0 ? 'Exact!' : `${q.delta} yr off`}
-          </span>
-          <span className={`font-bold ${pointsColor}`}>{q.points} pts</span>
-          <span className="text-gray-400 text-sm">{isOpen ? '\u25B2' : '\u25BC'}</span>
-        </div>
-      </button>
-      <div
-        className="transition-all duration-300 ease-in-out overflow-hidden"
-        style={{ maxHeight: isOpen ? '200px' : '0px', opacity: isOpen ? 1 : 0 }}
-      >
-        <div className="px-4 pb-4 pt-0 border-t border-gray-100">
-          <p className="text-sm text-gray-700 mt-3 leading-relaxed">
-            {q.revealContext}
-          </p>
-          {q.revealLink ? (
-            <a
-              href={q.revealLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-[#d93900] hover:underline mt-2 inline-block"
-            >
-              View original post
-            </a>
-          ) : null}
-        </div>
+        <span className={`text-lg font-black ${pointsColor}`}>
+          +{q.points}
+        </span>
       </div>
+      <p className="text-sm text-gray-700 leading-relaxed">
+        {q.revealContext}
+      </p>
+      {q.revealLink && (
+        <a
+          href={q.revealLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-[#d93900] hover:underline mt-2 inline-block font-medium"
+        >
+          View original post &rarr;
+        </a>
+      )}
     </div>
   );
 }
 
-// ── Leaderboard Component ──
+// ── Leaderboard ──
 
 function Leaderboard({
   title,
@@ -267,51 +496,35 @@ function Leaderboard({
   );
 }
 
-// ── Scoring Scale Info ──
-
-function ScoringInfo() {
-  return (
-    <div className="bg-gray-50 rounded-lg p-3 mb-4">
-      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-        Scoring
-      </h4>
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
-        {POINTS_SCALE.map((s) => (
-          <span key={s.delta}>
-            <span className="font-medium">{s.delta}</span>
-            <span className="text-gray-400"> = </span>
-            <span className="font-bold text-gray-700">{s.points}</span>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ── Main App ──
 
 export const App = () => {
-  const { phase, puzzle, guesses, touched, result, submitting, error, allGuessed, setGuess, submit } =
-    useGame();
-
-  const [openCards, setOpenCards] = useState<Set<number>>(new Set());
-
-  const toggleCard = useCallback((index: number) => {
-    setOpenCards((prev) => {
-      const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
-      return next;
-    });
-  }, []);
+  const {
+    phase,
+    puzzle,
+    guesses,
+    touched,
+    result,
+    submitting,
+    error,
+    allGuessed,
+    currentCard,
+    setGuess,
+    submit,
+    goNext,
+    goPrev,
+    goToCard,
+    finishReveal,
+  } = useGame();
 
   const handleShare = useCallback(() => {
     if (!result) return;
-    const deltas = result.perQuestion.map((q) => q.delta).join(',');
-    const text = `Rewinddit ${result.date}: ${result.totalScore}/500 | Streak ${result.streak} | Deltas: ${deltas}`;
+    const grid = result.perQuestion.map((q) => getShareSquare(q.delta)).join('');
+    const text = [
+      `Rewinddit ${result.date}`,
+      `${grid} ${result.totalScore}/500`,
+      `Streak: ${result.streak}`,
+    ].join('\n');
     void navigator.clipboard.writeText(text).then(() => {
       showToast('Copied to clipboard!');
     });
@@ -324,73 +537,97 @@ export const App = () => {
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-gray-200 border-t-[#d93900] rounded-full animate-spin" />
           <p className="text-sm text-gray-500">Loading today's puzzle...</p>
-          {error ? (
-            <p className="text-sm text-red-500 mt-2">{error}</p>
-          ) : null}
+          {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
         </div>
       </div>
     );
   }
 
-  // Quiz
+  // Quiz — one card at a time
   if (phase === 'quiz' && puzzle) {
+    const currentMoment = puzzle.moments[currentCard]!;
+    const midYear = Math.round((puzzle.minYear + puzzle.maxYear) / 2);
+    const isLastCard = currentCard === 4;
+    const isFirstCard = currentCard === 0;
+    const currentTouched = touched.has(currentMoment.id);
+
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-lg mx-auto px-4 py-6">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Rewinddit</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Guess the year for each Reddit moment
-            </p>
+          <div className="text-center mb-4">
+            <h1 className="text-xl font-bold text-gray-900">Rewinddit</h1>
             <p className="text-xs text-gray-400 mt-0.5">{puzzle.date}</p>
           </div>
 
-          <ScoringInfo />
+          <ProgressDots
+            total={5}
+            current={currentCard}
+            touched={touched}
+            momentIds={puzzle.moments.map((m) => m.id)}
+            onDotClick={goToCard}
+          />
 
-          <div className="space-y-4 mb-6">
-            {puzzle.moments.map((m, i) => {
-              const midYear = Math.round((puzzle.minYear + puzzle.maxYear) / 2);
-              return (
-                <QuizCard
-                  key={m.id}
-                  moment={m}
-                  index={i}
-                  year={guesses[m.id] ?? midYear}
-                  minYear={puzzle.minYear}
-                  maxYear={puzzle.maxYear}
-                  isTouched={touched.has(m.id)}
-                  onChange={setGuess}
-                />
-              );
-            })}
+          <p className="text-center text-sm text-gray-500 mb-4">
+            Question {currentCard + 1} of 5
+          </p>
+
+          <QuizCard
+            key={currentMoment.id}
+            moment={currentMoment}
+            year={guesses[currentMoment.id] ?? midYear}
+            minYear={puzzle.minYear}
+            maxYear={puzzle.maxYear}
+            isTouched={currentTouched}
+            onChange={setGuess}
+          />
+
+          <div className="flex gap-3 mt-6">
+            {!isFirstCard && (
+              <button
+                className="flex-1 py-3 rounded-full font-semibold bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200 active:bg-gray-300 transition-colors"
+                onClick={goPrev}
+              >
+                Previous
+              </button>
+            )}
+
+            {!isLastCard ? (
+              <button
+                className={`flex-1 py-3 rounded-full font-semibold cursor-pointer transition-all ${
+                  currentTouched
+                    ? 'bg-[#d93900] text-white hover:bg-[#c03000] active:bg-[#a02800]'
+                    : 'bg-gray-200 text-gray-500'
+                }`}
+                onClick={goNext}
+              >
+                Next
+              </button>
+            ) : (
+              <button
+                className="flex-1 py-3 rounded-full text-white font-semibold text-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-[#d93900] hover:bg-[#c03000] active:bg-[#a02800]"
+                disabled={!allGuessed || submitting}
+                onClick={submit}
+              >
+                {submitting ? 'Submitting...' : 'Submit Guesses'}
+              </button>
+            )}
           </div>
 
-          {error ? (
-            <p className="text-sm text-red-500 text-center mb-3">{error}</p>
-          ) : null}
-
-          <button
-            className="w-full py-3 rounded-full text-white font-semibold text-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-[#d93900] hover:bg-[#c03000] active:bg-[#a02800]"
-            disabled={!allGuessed || submitting}
-            onClick={submit}
-          >
-            {submitting ? 'Submitting...' : 'Submit Guesses'}
-          </button>
+          {error && (
+            <p className="text-sm text-red-500 text-center mt-3">{error}</p>
+          )}
         </div>
       </div>
     );
+  }
+
+  // Revealing — animated one-at-a-time
+  if (phase === 'revealing' && result) {
+    return <RevealScreen result={result} onComplete={finishReveal} />;
   }
 
   // Results
   if (phase === 'results' && result) {
-    const scorePercent = Math.round((result.totalScore / 500) * 100);
-    const scoreColor =
-      scorePercent >= 70
-        ? 'text-green-600'
-        : scorePercent >= 40
-          ? 'text-yellow-600'
-          : 'text-red-500';
-
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-lg mx-auto px-4 py-6">
@@ -399,56 +636,53 @@ export const App = () => {
             <p className="text-xs text-gray-400 mt-0.5">{result.date}</p>
           </div>
 
-          {/* Score summary */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center mb-6">
-            <p className={`text-5xl font-bold ${scoreColor}`}>
-              {result.totalScore}
-              <span className="text-lg text-gray-400">/500</span>
-            </p>
-            <div className="flex justify-center gap-6 mt-3">
-              <div>
-                <p className="text-2xl font-bold text-gray-900">
-                  {result.streak}
-                </p>
-                <p className="text-xs text-gray-500">Streak</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">
-                  {result.bestStreak}
-                </p>
-                <p className="text-xs text-gray-500">Best Streak</p>
-              </div>
-              {result.dailyRank ? (
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">
-                    #{result.dailyRank}
-                  </p>
-                  <p className="text-xs text-gray-500">Today's Rank</p>
-                </div>
-              ) : null}
-            </div>
+          {/* Score ring + reaction */}
+          <div
+            className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-6"
+            style={{ animation: 'fadeIn 0.5s ease-out' }}
+          >
+            <div className="flex flex-col items-center">
+              <ScoreRing score={result.totalScore} maxScore={500} />
 
-            <button
-              className="mt-4 px-6 py-2 rounded-full bg-[#d93900] text-white font-medium cursor-pointer hover:bg-[#c03000] active:bg-[#a02800] transition-colors"
-              onClick={handleShare}
-            >
-              Share Results
-            </button>
+              <div className="flex justify-center gap-6 mt-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-gray-900">
+                    {result.streak}
+                  </p>
+                  <p className="text-xs text-gray-500">Streak</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-gray-900">
+                    {result.bestStreak}
+                  </p>
+                  <p className="text-xs text-gray-500">Best</p>
+                </div>
+                {result.dailyRank && (
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-gray-900">
+                      #{result.dailyRank}
+                    </p>
+                    <p className="text-xs text-gray-500">Rank</p>
+                  </div>
+                )}
+              </div>
+
+              <button
+                className="mt-5 px-6 py-2.5 rounded-full bg-[#d93900] text-white font-semibold cursor-pointer hover:bg-[#c03000] active:bg-[#a02800] transition-colors"
+                onClick={handleShare}
+              >
+                Share Results
+              </button>
+            </div>
           </div>
 
-          {/* Per-question reveals */}
+          {/* Per-question reveals — auto-expanded */}
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
             Results
           </h2>
           <div className="space-y-3 mb-6">
-            {result.perQuestion.map((q, i) => (
-              <ResultCard
-                key={q.id}
-                q={q}
-                index={i}
-                isOpen={openCards.has(i)}
-                onToggle={() => toggleCard(i)}
-              />
+            {result.perQuestion.map((q) => (
+              <ResultCard key={q.id} q={q} />
             ))}
           </div>
 
@@ -462,11 +696,6 @@ export const App = () => {
               title="All-Time Top 10"
               entries={result.leaderboards.allTimeTop}
             />
-          </div>
-
-          {/* Scoring reference */}
-          <div className="mt-6">
-            <ScoringInfo />
           </div>
         </div>
       </div>

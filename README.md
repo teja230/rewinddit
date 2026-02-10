@@ -82,17 +82,17 @@ Daily puzzle shape:
 
 ## Redis Keys
 
-All keys are prefixed with `rewinddit:`.
+All keys are prefixed with `rewinddittt:`.
 
-- `rewinddit:puzzle:<date>` -> cached daily puzzle JSON
-- `rewinddit:play:<date>:<userId>` -> saved submission result JSON
-- `rewinddit:user:<userId>:lastPlayed` -> date string
-- `rewinddit:user:<userId>:streak` -> int
-- `rewinddit:user:<userId>:bestStreak` -> int
-- `rewinddit:user:<userId>:stats` -> JSON `{ gamesPlayed, totalScore }`
-- `rewinddit:user:<userId>:name` -> username
-- `rewinddit:lb:daily:<date>` -> sorted set (`member=userId`, `score=dailyScore`)
-- `rewinddit:lb:alltime` -> sorted set (`member=userId`, `score=lifetimeScore`)
+- `rewinddittt:puzzle:<date>` -> cached daily puzzle JSON
+- `rewinddittt:play:<date>:<userId>` -> saved submission result JSON
+- `rewinddittt:user:<userId>:lastPlayed` -> date string
+- `rewinddittt:user:<userId>:streak` -> int
+- `rewinddittt:user:<userId>:bestStreak` -> int
+- `rewinddittt:user:<userId>:stats` -> JSON `{ gamesPlayed, totalScore }`
+- `rewinddittt:user:<userId>:name` -> username
+- `rewinddittt:lb:daily:<date>` -> sorted set (`member=userId`, `score=dailyScore`)
+- `rewinddittt:lb:alltime` -> sorted set (`member=userId`, `score=lifetimeScore`)
 
 ## API
 

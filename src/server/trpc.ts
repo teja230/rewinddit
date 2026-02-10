@@ -16,6 +16,7 @@ import {
   MAX_YEAR,
 } from './core/puzzle';
 import type { DailyPuzzle } from './core/puzzle';
+import { K } from './core/redisKeys';
 
 // ── tRPC init ──
 
@@ -32,20 +33,6 @@ async function getUserId(): Promise<string> {
     return 'anonymous';
   }
 }
-
-// ── Redis key helpers ──
-
-const K = {
-  puzzle: (date: string) => `rewinddit:puzzle:${date}`,
-  play: (date: string, userId: string) => `rewinddit:play:${date}:${userId}`,
-  lastPlayed: (userId: string) => `rewinddit:user:${userId}:lastPlayed`,
-  streak: (userId: string) => `rewinddit:user:${userId}:streak`,
-  bestStreak: (userId: string) => `rewinddit:user:${userId}:bestStreak`,
-  stats: (userId: string) => `rewinddit:user:${userId}:stats`,
-  userName: (userId: string) => `rewinddit:user:${userId}:name`,
-  dailyLb: (date: string) => `rewinddit:lb:daily:${date}`,
-  allTimeLb: 'rewinddit:lb:alltime',
-};
 
 // ── Helpers ──
 
