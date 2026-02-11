@@ -135,6 +135,10 @@ api.get('/puzzle/today', async (c) => {
     let playerCount = 0;
     try { playerCount = await redis.zCard(K.dailyLb(today)); } catch { /* */ }
 
+    // Load attempts
+    const attemptsRaw = await redis.get(K.attempts(today, userId));
+    const allAttempts = attemptsRaw ? (JSON.parse(attemptsRaw) as SubmitResult[]) : [];
+
     return c.json<PuzzleTodayResponse>({
       date: today,
       minYear: MIN_YEAR,
@@ -142,9 +146,13 @@ api.get('/puzzle/today', async (c) => {
       moments,
       hasPlayed,
       previousResult,
+      allAttempts,
+      attemptsUsed: allAttempts.length,
+      maxAttempts: 3,
       currentUser: userId,
       postUrl: getPostUrl(),
       playerCount,
+      userStats: null,
     });
   } catch (error) {
     console.error('Error in puzzle/today:', error);
@@ -259,9 +267,16 @@ api.post('/submit', async (c) => {
       newAchievements: [],
       questionDifficulty: [],
       leaderboards: { dailyTop, allTimeTop, monthlyTop },
+      attemptNumber: 1,
+      countedForLeaderboard: true,
     };
 
     await redis.set(K.play(today, userId), JSON.stringify(result));
+    // Also store in attempts array
+    const attemptsRaw = await redis.get(K.attempts(today, userId));
+    const allAttempts = attemptsRaw ? (JSON.parse(attemptsRaw) as SubmitResult[]) : [];
+    allAttempts.push(result);
+    await redis.set(K.attempts(today, userId), JSON.stringify(allAttempts));
     return c.json<SubmitResult>(result);
   } catch (error) {
     console.error('Error in submit:', error);

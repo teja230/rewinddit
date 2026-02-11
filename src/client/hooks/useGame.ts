@@ -27,6 +27,9 @@ type GameState = {
   } | null;
   hints: Record<string, HintResponse>;
   userStats: UserStats | null;
+  attemptsUsed: number;
+  maxAttempts: number;
+  allAttempts: SubmitResult[];
 };
 
 function normalizeResult(result: SubmitResult): SubmitResult {
@@ -44,6 +47,8 @@ function normalizeResult(result: SubmitResult): SubmitResult {
       ...q,
       promptTitle: q.promptTitle ?? '',
     })),
+    attemptNumber: result.attemptNumber ?? 1,
+    countedForLeaderboard: result.countedForLeaderboard ?? true,
   };
 }
 
@@ -60,6 +65,9 @@ export const useGame = () => {
     liveLeaderboards: null,
     hints: {},
     userStats: null,
+    attemptsUsed: 0,
+    maxAttempts: 3,
+    allAttempts: [],
   });
 
   const fetchLeaderboards = useCallback(async () => {
@@ -84,26 +92,58 @@ export const useGame = () => {
     const load = async () => {
       try {
         const data = await trpc.puzzleToday.query();
+        const allAttempts = (data.allAttempts ?? []).map(normalizeResult);
+        const attemptsUsed = data.attemptsUsed ?? allAttempts.length;
+        const maxAttempts = data.maxAttempts ?? 3;
+        const userStats = data.userStats ?? null;
+
+        // Check if user clicked "Retry" from the splash post
+        const wantsRetry = sessionStorage.getItem('rewinddit-retry') === '1';
+        if (wantsRetry) sessionStorage.removeItem('rewinddit-retry');
 
         if (data.hasPlayed && data.previousResult) {
           const safePrevious = normalizeResult(data.previousResult);
-          const prevGuesses = safePrevious.perQuestion.reduce(
-            (acc, q) => ({ ...acc, [q.id]: q.guess }),
-            {} as Record<string, number>
-          );
-          setState({
-            phase: 'results',
-            puzzle: data,
-            guesses: prevGuesses,
-            touched: new Set(Object.keys(prevGuesses)),
-            result: safePrevious,
-            submitting: false,
-            error: null,
-            currentCard: 0,
-            liveLeaderboards: null,
-            hints: {},
-            userStats: null,
-          });
+
+          // If retry was requested and attempts remain, go straight to quiz
+          if (wantsRetry && attemptsUsed < maxAttempts) {
+            setState({
+              phase: 'quiz',
+              puzzle: data,
+              guesses: {},
+              touched: new Set<string>(),
+              result: null,
+              submitting: false,
+              error: null,
+              currentCard: 0,
+              liveLeaderboards: null,
+              hints: {},
+              userStats,
+              attemptsUsed,
+              maxAttempts,
+              allAttempts,
+            });
+          } else {
+            const prevGuesses = safePrevious.perQuestion.reduce(
+              (acc, q) => ({ ...acc, [q.id]: q.guess }),
+              {} as Record<string, number>
+            );
+            setState({
+              phase: 'results',
+              puzzle: data,
+              guesses: prevGuesses,
+              touched: new Set(Object.keys(prevGuesses)),
+              result: safePrevious,
+              submitting: false,
+              error: null,
+              currentCard: 0,
+              liveLeaderboards: null,
+              hints: {},
+              userStats,
+              attemptsUsed,
+              maxAttempts,
+              allAttempts,
+            });
+          }
         } else {
           setState({
             phase: 'quiz',
@@ -116,7 +156,10 @@ export const useGame = () => {
             currentCard: 0,
             liveLeaderboards: null,
             hints: {},
-            userStats: null,
+            userStats,
+            attemptsUsed,
+            maxAttempts,
+            allAttempts,
           });
         }
       } catch (err) {
@@ -138,7 +181,7 @@ export const useGame = () => {
     }
   }, [state.phase, fetchLeaderboards]);
 
-  // Fetch user stats when entering results
+  // Fetch user stats when entering results (if not already loaded)
   useEffect(() => {
     if (state.phase === 'results' && !state.userStats) {
       void (async () => {
@@ -202,6 +245,8 @@ export const useGame = () => {
         phase: 'revealing',
         result: safeResult,
         submitting: false,
+        attemptsUsed: prev.attemptsUsed + 1,
+        allAttempts: [...prev.allAttempts, safeResult],
       }));
     } catch (err) {
       console.error('Failed to submit', err);
@@ -215,6 +260,22 @@ export const useGame = () => {
 
   const finishReveal = useCallback(() => {
     setState((prev) => ({ ...prev, phase: 'results' }));
+  }, []);
+
+  const retry = useCallback(() => {
+    setState((prev) => {
+      if (prev.attemptsUsed >= prev.maxAttempts) return prev;
+      return {
+        ...prev,
+        phase: 'quiz',
+        guesses: {},
+        touched: new Set<string>(),
+        result: null,
+        error: null,
+        currentCard: 0,
+        hints: {},
+      };
+    });
   }, []);
 
   const requestHint = useCallback(
@@ -267,6 +328,7 @@ export const useGame = () => {
 
   const currentUser = state.puzzle?.currentUser ?? null;
   const postUrl = state.puzzle?.postUrl ?? '';
+  const canRetry = state.attemptsUsed < state.maxAttempts;
 
   return {
     phase: state.phase,
@@ -284,12 +346,17 @@ export const useGame = () => {
     postUrl,
     hints: state.hints,
     userStats: state.userStats,
+    attemptsUsed: state.attemptsUsed,
+    maxAttempts: state.maxAttempts,
+    allAttempts: state.allAttempts,
+    canRetry,
     setGuess,
     submit,
     goNext,
     goPrev,
     goToCard,
     finishReveal,
+    retry,
     requestHint,
     postToComments,
   } as const;

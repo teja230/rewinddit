@@ -15,6 +15,8 @@ export const K = {
   dailyLb: (date: string) => `${KEY_PREFIX}:lb:daily:${date}`,
   monthlyLb: (yearMonth: string) => `${KEY_PREFIX}:lb:monthly:${yearMonth}`,
   allTimeLb: `${KEY_PREFIX}:lb:alltime`,
+  /** All attempt results for a day (JSON array of SubmitResult) */
+  attempts: (date: string, userId: string) => `${KEY_PREFIX}:attempts:${date}:${userId}`,
   /** Per-question difficulty stats: hash with fields plays, exactCount, totalDelta */
   qStats: (date: string, momentId: string) => `${KEY_PREFIX}:qstats:${date}:${momentId}`,
 } as const;

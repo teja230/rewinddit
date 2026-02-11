@@ -62,10 +62,6 @@ function getYearMonth(): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
 }
 
-function getYearMonthFromDate(date: string): string {
-  return date.slice(0, 7);
-}
-
 async function ensurePuzzle(date: string): Promise<DailyPuzzle> {
   const cached = await redis.get(K.puzzle(date));
   if (cached) {
@@ -112,35 +108,6 @@ async function getPlayerCount(date: string): Promise<number> {
   } catch {
     return 0;
   }
-}
-
-async function ensureLeaderboardMembership(
-  date: string,
-  userId: string,
-  totalScore: number
-): Promise<void> {
-  const yearMonth = getYearMonthFromDate(date);
-  const dailyKey = K.dailyLb(date);
-  const monthlyKey = K.monthlyLb(yearMonth);
-  const allTimeKey = K.allTimeLb;
-
-  const [dailyScore, monthlyScore, allTimeScore] = await Promise.all([
-    redis.zScore(dailyKey, userId),
-    redis.zScore(monthlyKey, userId),
-    redis.zScore(allTimeKey, userId),
-  ]);
-
-  await Promise.all([
-    dailyScore === undefined
-      ? redis.zAdd(dailyKey, { member: userId, score: totalScore })
-      : Promise.resolve(),
-    monthlyScore === undefined
-      ? redis.zAdd(monthlyKey, { member: userId, score: totalScore })
-      : Promise.resolve(),
-    allTimeScore === undefined
-      ? redis.zAdd(allTimeKey, { member: userId, score: totalScore })
-      : Promise.resolve(),
-  ]);
 }
 
 // ── Achievement definitions ──
@@ -191,17 +158,21 @@ function checkAchievements(
 
 export const appRouter = t.router({
   puzzleToday: t.procedure.query(async (): Promise<PuzzleTodayResponse> => {
+    const MAX_ATTEMPTS = 3;
     const today = getTodayUTC();
     const puzzle = await ensurePuzzle(today);
     const userId = await getUserId();
 
-    const existingPlay = await redis.get(K.play(today, userId));
-    const hasPlayed = existingPlay !== undefined && existingPlay !== null;
+    // Load all attempts for today
+    const attemptsRaw = await redis.get(K.attempts(today, userId));
+    const allAttempts: SubmitResult[] = attemptsRaw
+      ? (JSON.parse(attemptsRaw) as SubmitResult[])
+      : [];
+    const attemptsUsed = allAttempts.length;
+    const hasPlayed = attemptsUsed > 0;
 
-    let previousResult: SubmitResult | undefined;
-    if (hasPlayed) {
-      previousResult = JSON.parse(existingPlay!) as SubmitResult;
-    }
+    // Most recent attempt as previousResult (for backward compat)
+    const previousResult = hasPlayed ? allAttempts[allAttempts.length - 1] : undefined;
 
     const userSeed = hashString(`${userId}:${today}`);
     const userRng = mulberry32(userSeed);
@@ -210,6 +181,36 @@ export const appRouter = t.router({
 
     const playerCount = await getPlayerCount(today);
 
+    // Pre-fetch user stats for returning users
+    let userStats: UserStats | null = null;
+    const rawStats = await redis.get(K.stats(userId));
+    if (rawStats) {
+      const stats = JSON.parse(rawStats) as { gamesPlayed: number; totalScore: number };
+      if (stats.gamesPlayed > 0) {
+        const [rawStreak, rawBestStreak, rawBestScore, rawAchievements] =
+          await Promise.all([
+            redis.get(K.streak(userId)),
+            redis.get(K.bestStreak(userId)),
+            redis.get(K.bestScore(userId)),
+            redis.get(K.achievements(userId)),
+          ]);
+        const achIds: string[] = rawAchievements ? (JSON.parse(rawAchievements) as string[]) : [];
+        const achievements = achIds
+          .map((id) => ALL_ACHIEVEMENTS.find((a) => a.id === id))
+          .filter((a): a is Achievement => a !== undefined);
+
+        userStats = {
+          gamesPlayed: stats.gamesPlayed,
+          totalScore: stats.totalScore,
+          averageScore: Math.round(stats.totalScore / stats.gamesPlayed),
+          bestScore: rawBestScore ? parseInt(rawBestScore) : 0,
+          currentStreak: rawStreak ? parseInt(rawStreak) : 0,
+          bestStreak: rawBestStreak ? parseInt(rawBestStreak) : 0,
+          achievements,
+        };
+      }
+    }
+
     return {
       date: today,
       minYear: MIN_YEAR,
@@ -217,9 +218,13 @@ export const appRouter = t.router({
       moments,
       hasPlayed,
       previousResult,
+      allAttempts,
+      attemptsUsed,
+      maxAttempts: MAX_ATTEMPTS,
       currentUser: userId,
       postUrl: getPostUrl(),
       playerCount,
+      userStats,
     };
   }),
 
@@ -231,22 +236,28 @@ export const appRouter = t.router({
       })
     )
     .mutation(async ({ input }): Promise<SubmitResult> => {
+      const MAX_ATTEMPTS = 3;
       const today = getTodayUTC();
       const userId = await getUserId();
 
       await redis.set(K.userName(userId), userId);
 
-      // Check replay
-      const existingPlay = await redis.get(K.play(today, userId));
-      if (existingPlay) {
-        const existing = JSON.parse(existingPlay) as SubmitResult;
-        await ensureLeaderboardMembership(existing.date, userId, existing.totalScore);
-        return existing;
-      }
-
       if (input.date !== today) {
         throw new Error('Can only submit for today');
       }
+
+      // Load existing attempts
+      const attemptsRaw = await redis.get(K.attempts(today, userId));
+      const allAttempts: SubmitResult[] = attemptsRaw
+        ? (JSON.parse(attemptsRaw) as SubmitResult[])
+        : [];
+
+      if (allAttempts.length >= MAX_ATTEMPTS) {
+        throw new Error('Maximum attempts reached for today');
+      }
+
+      const isFirstAttempt = allAttempts.length === 0;
+      const attemptNumber = allAttempts.length + 1;
 
       const puzzle = await ensurePuzzle(today);
 
@@ -287,78 +298,82 @@ export const appRouter = t.router({
       }
       const totalScore = rawScore - hintPenalty;
 
-      // Streak
-      const lastPlayed = await redis.get(K.lastPlayed(userId));
-      const yesterday = getYesterdayUTC();
-      let streak = 1;
-      if (lastPlayed === yesterday) {
-        const prevStreak = await redis.get(K.streak(userId));
-        streak = (prevStreak ? parseInt(prevStreak) : 0) + 1;
-      }
-
-      const prevBest = await redis.get(K.bestStreak(userId));
-      const bestStreak = Math.max(streak, prevBest ? parseInt(prevBest) : 0);
-
-      // Streak milestones
-      const MILESTONES = [30, 14, 7];
+      let streak = 0;
+      let bestStreak = 0;
       let streakMilestone: number | undefined;
-      for (const m of MILESTONES) {
-        if (streak === m) {
-          streakMilestone = m;
-          break;
+      let newAchievements: Achievement[] = [];
+
+      // Only first attempt affects leaderboards, stats, streaks, achievements
+      if (isFirstAttempt) {
+        // Streak
+        const lastPlayed = await redis.get(K.lastPlayed(userId));
+        const yesterday = getYesterdayUTC();
+        streak = 1;
+        if (lastPlayed === yesterday) {
+          const prevStreak = await redis.get(K.streak(userId));
+          streak = (prevStreak ? parseInt(prevStreak) : 0) + 1;
         }
+
+        const prevBest = await redis.get(K.bestStreak(userId));
+        bestStreak = Math.max(streak, prevBest ? parseInt(prevBest) : 0);
+
+        // Streak milestones
+        const MILESTONES = [30, 14, 7];
+        for (const m of MILESTONES) {
+          if (streak === m) { streakMilestone = m; break; }
+        }
+
+        await Promise.all([
+          redis.set(K.lastPlayed(userId), today),
+          redis.set(K.streak(userId), streak.toString()),
+          redis.set(K.bestStreak(userId), bestStreak.toString()),
+        ]);
+
+        // Stats
+        const rawStats = await redis.get(K.stats(userId));
+        const stats = rawStats
+          ? (JSON.parse(rawStats) as { gamesPlayed: number; totalScore: number })
+          : { gamesPlayed: 0, totalScore: 0 };
+        stats.gamesPlayed += 1;
+        stats.totalScore += totalScore;
+        await redis.set(K.stats(userId), JSON.stringify(stats));
+
+        // Best score
+        const prevBestScore = await redis.get(K.bestScore(userId));
+        const best = Math.max(totalScore, prevBestScore ? parseInt(prevBestScore) : 0);
+        await redis.set(K.bestScore(userId), best.toString());
+
+        // Achievements
+        const existingAchRaw = await redis.get(K.achievements(userId));
+        const existingAchIds: Set<string> = existingAchRaw
+          ? new Set(JSON.parse(existingAchRaw) as string[])
+          : new Set();
+
+        const avgScore = stats.totalScore / stats.gamesPlayed;
+        newAchievements = checkAchievements(
+          existingAchIds, totalScore, perQuestion, streak, stats.gamesPlayed, avgScore
+        );
+
+        if (newAchievements.length > 0) {
+          for (const a of newAchievements) existingAchIds.add(a.id);
+          await redis.set(K.achievements(userId), JSON.stringify([...existingAchIds]));
+        }
+
+        // Leaderboards (daily + all-time + monthly)
+        const yearMonth = getYearMonth();
+        await Promise.all([
+          redis.zAdd(K.dailyLb(today), { member: userId, score: totalScore }),
+          redis.zIncrBy(K.allTimeLb, userId, totalScore),
+          redis.zIncrBy(K.monthlyLb(yearMonth), userId, totalScore),
+        ]);
+      } else {
+        // For retries, carry forward streak/bestStreak from first attempt
+        const first = allAttempts[0]!;
+        streak = first.streak;
+        bestStreak = first.bestStreak;
       }
 
-      await Promise.all([
-        redis.set(K.lastPlayed(userId), today),
-        redis.set(K.streak(userId), streak.toString()),
-        redis.set(K.bestStreak(userId), bestStreak.toString()),
-      ]);
-
-      // Stats
-      const rawStats = await redis.get(K.stats(userId));
-      const stats = rawStats
-        ? (JSON.parse(rawStats) as { gamesPlayed: number; totalScore: number })
-        : { gamesPlayed: 0, totalScore: 0 };
-      stats.gamesPlayed += 1;
-      stats.totalScore += totalScore;
-      await redis.set(K.stats(userId), JSON.stringify(stats));
-
-      // Best score
-      const prevBestScore = await redis.get(K.bestScore(userId));
-      const bestScore = Math.max(totalScore, prevBestScore ? parseInt(prevBestScore) : 0);
-      await redis.set(K.bestScore(userId), bestScore.toString());
-
-      // Achievements
-      const existingAchRaw = await redis.get(K.achievements(userId));
-      const existingAchIds: Set<string> = existingAchRaw
-        ? new Set(JSON.parse(existingAchRaw) as string[])
-        : new Set();
-
-      const avgScore = stats.totalScore / stats.gamesPlayed;
-      const newAchievements = checkAchievements(
-        existingAchIds,
-        totalScore,
-        perQuestion,
-        streak,
-        stats.gamesPlayed,
-        avgScore
-      );
-
-      if (newAchievements.length > 0) {
-        for (const a of newAchievements) existingAchIds.add(a.id);
-        await redis.set(K.achievements(userId), JSON.stringify([...existingAchIds]));
-      }
-
-      // Leaderboards (daily + all-time + monthly)
-      const yearMonth = getYearMonth();
-      await Promise.all([
-        redis.zAdd(K.dailyLb(today), { member: userId, score: totalScore }),
-        redis.zIncrBy(K.allTimeLb, userId, totalScore),
-        redis.zIncrBy(K.monthlyLb(yearMonth), userId, totalScore),
-      ]);
-
-      // Per-question difficulty stats
+      // Per-question difficulty stats (all attempts contribute)
       const qStatPromises = perQuestion.map(async (q) => {
         const key = K.qStats(today, q.id);
         await Promise.all([
@@ -381,16 +396,12 @@ export const appRouter = t.router({
           const p = parseInt(plays ?? '1');
           const e = parseInt(exactCount ?? '0');
           const td = parseInt(totalDelta ?? '0');
-          return {
-            id: q.id,
-            plays: p,
-            exactPercent: Math.round((e / p) * 100),
-            avgDelta: Math.round((td / p) * 10) / 10,
-          };
+          return { id: q.id, plays: p, exactPercent: Math.round((e / p) * 100), avgDelta: Math.round((td / p) * 10) / 10 };
         })
       );
 
-      // Rank + percentile
+      // Rank + percentile (from first attempt's leaderboard position)
+      const yearMonth = getYearMonth();
       const [dailyRank, dailyTop, allTimeTop, monthlyTop, totalPlayers] = await Promise.all([
         getUserRank(K.dailyLb(today), userId),
         getTopEntries(K.dailyLb(today), 10),
@@ -415,9 +426,19 @@ export const appRouter = t.router({
         newAchievements,
         questionDifficulty,
         leaderboards: { dailyTop, allTimeTop, monthlyTop },
+        attemptNumber,
+        countedForLeaderboard: isFirstAttempt,
       };
 
-      await redis.set(K.play(today, userId), JSON.stringify(result));
+      // Save to attempts array
+      allAttempts.push(result);
+      await redis.set(K.attempts(today, userId), JSON.stringify(allAttempts));
+
+      // Keep K.play for backward compat (always stores first attempt)
+      if (isFirstAttempt) {
+        await redis.set(K.play(today, userId), JSON.stringify(result));
+      }
+
       return result;
     }),
 

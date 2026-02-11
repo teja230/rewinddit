@@ -23,9 +23,15 @@ export type PuzzleTodayResponse = {
   moments: MomentPrompt[];
   hasPlayed: boolean;
   previousResult?: SubmitResult | undefined;
+  /** All attempt results for today (0–3) */
+  allAttempts: SubmitResult[];
+  attemptsUsed: number;
+  maxAttempts: number;
   currentUser: string;
   postUrl: string;
   playerCount: number;
+  /** Pre-fetched user stats for returning users (null for first-time) */
+  userStats: UserStats | null;
 };
 
 // ── POST /api/submit ──
@@ -82,6 +88,10 @@ export type SubmitResult = {
     allTimeTop: LeaderboardEntry[];
     monthlyTop: LeaderboardEntry[];
   };
+  /** Which attempt this is (1, 2, or 3) */
+  attemptNumber: number;
+  /** Whether this attempt counted for leaderboards */
+  countedForLeaderboard: boolean;
 };
 
 // ── GET /api/leaderboards ──

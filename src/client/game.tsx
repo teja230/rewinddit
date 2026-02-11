@@ -741,7 +741,9 @@ export const App = () => {
   const {
     phase, puzzle, guesses, touched, result, submitting, error, allGuessed,
     currentCard, leaderboards, playerCount, currentUser, postUrl, hints, userStats,
-    setGuess, submit, goNext, goPrev, goToCard, finishReveal, requestHint, postToComments,
+    attemptsUsed, maxAttempts, allAttempts, canRetry,
+    setGuess, submit, goNext, goPrev, goToCard, finishReveal, retry,
+    requestHint, postToComments,
   } = useGame();
 
   const showConfetti = phase === 'results' && (result?.totalScore ?? 0) >= 400;
@@ -913,18 +915,31 @@ export const App = () => {
                 {result.dailyRank && <div className="text-center"><p className="text-2xl font-bold text-gray-900 dark:text-white">#{result.dailyRank}</p><p className="text-xs text-gray-500 dark:text-gray-400">Rank</p></div>}
               </div>
 
-              {/* Action buttons */}
-              <div className="flex gap-1.5 sm:gap-2 mt-4 sm:mt-5">
-                <button className="px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full bg-[#d93900] text-white text-xs sm:text-sm font-semibold cursor-pointer hover:bg-[#c03000] transition-colors press-feedback shadow-lg shadow-[#d93900]/20" onClick={handleShare}>
+              {/* Attempt indicator */}
+              {result.attemptNumber > 1 && (
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                  Attempt {result.attemptNumber}/{maxAttempts}
+                  {!result.countedForLeaderboard && ' (practice — first attempt counts for leaderboard)'}
+                </p>
+              )}
+
+              {/* Action buttons — single row */}
+              <div className="flex gap-2 mt-4 sm:mt-5 w-full">
+                <button className="flex-1 py-2.5 rounded-full bg-[#d93900] text-white text-sm font-semibold cursor-pointer hover:bg-[#c03000] transition-colors press-feedback shadow-lg shadow-[#d93900]/20" onClick={handleShare}>
                   {'\ud83d\udcf1'} Share
                 </button>
                 <button
-                  className={`px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold cursor-pointer transition-colors press-feedback border ${commentPosted ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-700' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                  className={`flex-1 py-2.5 rounded-full text-sm font-semibold cursor-pointer transition-colors press-feedback border ${commentPosted ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-700' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                   onClick={handlePostToComments}
                   disabled={commentPosted}
                 >
-                  {commentPosted ? '\u2713 Posted' : '\ud83d\udcac Post to Comments'}
+                  {commentPosted ? '\u2713 Posted' : '\ud83d\udcac Comment'}
                 </button>
+                {canRetry && (
+                  <button className="flex-1 py-2.5 rounded-full text-sm font-semibold cursor-pointer transition-colors press-feedback border-2 border-[#d93900] text-[#d93900] hover:bg-[#d93900]/5" onClick={retry}>
+                    {'\ud83d\udd04'} Retry ({maxAttempts - attemptsUsed})
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -934,6 +949,27 @@ export const App = () => {
 
           {/* Personal stats */}
           {userStats && <PersonalStatsCard stats={userStats} />}
+
+          {/* All attempts comparison */}
+          {allAttempts.length > 1 && (
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 mb-4">
+              <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Your Attempts</h3>
+              <div className="space-y-2">
+                {allAttempts.map((a, i) => (
+                  <div key={i} className={`flex items-center justify-between py-2 px-3 rounded-lg ${a.attemptNumber === result.attemptNumber ? 'bg-[#d93900]/10 ring-1 ring-[#d93900]/20' : 'bg-gray-50 dark:bg-gray-800'}`}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-gray-500 dark:text-gray-400">#{a.attemptNumber}</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-300">
+                        {a.perQuestion.map((q) => getShareSquare(q.delta)).join('')}
+                      </span>
+                      {a.countedForLeaderboard && <span className="text-[10px] bg-[#d93900] text-white px-1.5 py-0.5 rounded-full font-bold uppercase">Ranked</span>}
+                    </div>
+                    <span className="text-sm font-bold text-[#d93900]">{a.totalScore}/500</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Breakdown */}
           <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Breakdown</h2>
