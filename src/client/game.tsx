@@ -864,6 +864,13 @@ export const App = () => {
 
   // ── Results ──
   if (phase === 'results' && result) {
+    const newAchievements = result.newAchievements ?? [];
+    const safeLeaderboards = leaderboards ?? {
+      dailyTop: result.leaderboards?.dailyTop ?? [],
+      allTimeTop: result.leaderboards?.allTimeTop ?? [],
+      monthlyTop: result.leaderboards?.monthlyTop ?? [],
+    };
+
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         {showConfetti && <Confetti />}
@@ -884,7 +891,7 @@ export const App = () => {
           {result.streakMilestone && <StreakMilestone days={result.streakMilestone} />}
 
           {/* New achievements */}
-          {result.newAchievements.length > 0 && <AchievementBadges achievements={result.newAchievements} isNew={true} />}
+          {newAchievements.length > 0 && <AchievementBadges achievements={newAchievements} isNew={true} />}
 
           {/* Score */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md border border-gray-100 dark:border-gray-800 p-4 sm:p-6 mb-6" style={{ animation: 'fadeIn 0.5s ease-out' }}>
@@ -939,7 +946,7 @@ export const App = () => {
           </div>
 
           {/* Leaderboards with tabs */}
-          {leaderboards && <LeaderboardTabs leaderboards={leaderboards} currentUser={currentUser} />}
+          <LeaderboardTabs leaderboards={safeLeaderboards} currentUser={currentUser} />
 
           <NextPuzzleCountdown />
         </div>

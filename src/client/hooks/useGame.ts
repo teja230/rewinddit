@@ -29,6 +29,24 @@ type GameState = {
   userStats: UserStats | null;
 };
 
+function normalizeResult(result: SubmitResult): SubmitResult {
+  return {
+    ...result,
+    percentile: result.percentile ?? 0,
+    newAchievements: result.newAchievements ?? [],
+    questionDifficulty: result.questionDifficulty ?? [],
+    leaderboards: {
+      dailyTop: result.leaderboards?.dailyTop ?? [],
+      allTimeTop: result.leaderboards?.allTimeTop ?? [],
+      monthlyTop: result.leaderboards?.monthlyTop ?? [],
+    },
+    perQuestion: (result.perQuestion ?? []).map((q) => ({
+      ...q,
+      promptTitle: q.promptTitle ?? '',
+    })),
+  };
+}
+
 export const useGame = () => {
   const [state, setState] = useState<GameState>({
     phase: 'loading',
@@ -68,7 +86,8 @@ export const useGame = () => {
         const data = await trpc.puzzleToday.query();
 
         if (data.hasPlayed && data.previousResult) {
-          const prevGuesses = data.previousResult.perQuestion.reduce(
+          const safePrevious = normalizeResult(data.previousResult);
+          const prevGuesses = safePrevious.perQuestion.reduce(
             (acc, q) => ({ ...acc, [q.id]: q.guess }),
             {} as Record<string, number>
           );
@@ -77,7 +96,7 @@ export const useGame = () => {
             puzzle: data,
             guesses: prevGuesses,
             touched: new Set(Object.keys(prevGuesses)),
-            result: data.previousResult,
+            result: safePrevious,
             submitting: false,
             error: null,
             currentCard: 0,
@@ -176,11 +195,12 @@ export const useGame = () => {
         date: puzzle.date,
         guessesById: guesses,
       });
+      const safeResult = normalizeResult(result);
 
       setState((prev) => ({
         ...prev,
         phase: 'revealing',
-        result,
+        result: safeResult,
         submitting: false,
       }));
     } catch (err) {
