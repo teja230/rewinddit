@@ -422,12 +422,13 @@ export const appRouter = t.router({
     }),
 
   postComment: t.procedure
-    .input(z.object({ text: z.string(), date: z.string() }))
+    .input(z.object({ text: z.string(), date: z.string().optional() }))
     .mutation(async ({ input }) => {
       const postId = context.postId;
       if (!postId) throw new Error('No post context available');
       const userId = await getUserId();
-      const lockKey = K.commentsPosted(input.date);
+      const date = input.date ?? getTodayUTC();
+      const lockKey = K.commentsPosted(date);
 
       // Atomic once-per-user-per-date gate.
       const firstPost = await redis.hSetNX(lockKey, userId, new Date().toISOString());
