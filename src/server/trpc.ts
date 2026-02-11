@@ -18,6 +18,7 @@ import {
   MIN_YEAR,
   MAX_YEAR,
 } from './core/puzzle';
+import { getMomentById } from './data/moments';
 import type { DailyPuzzle } from './core/puzzle';
 import { K } from './core/redisKeys';
 
@@ -41,7 +42,13 @@ async function getUserId(): Promise<string> {
 
 async function ensurePuzzle(date: string): Promise<DailyPuzzle> {
   const cached = await redis.get(K.puzzle(date));
-  if (cached) return JSON.parse(cached) as DailyPuzzle;
+  if (cached) {
+    const puzzle = JSON.parse(cached) as DailyPuzzle;
+    // Validate all moment IDs still exist (moments may have been removed)
+    const allValid = puzzle.momentIds.every((id) => getMomentById(id) !== undefined);
+    if (allValid) return puzzle;
+    // Stale puzzle references deleted moments — regenerate
+  }
   const puzzle = generateDailyPuzzle(date);
   await redis.set(K.puzzle(date), JSON.stringify(puzzle));
   return puzzle;

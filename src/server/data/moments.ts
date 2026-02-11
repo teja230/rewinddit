@@ -26,16 +26,6 @@ export const MOMENTS: Moment[] = [
     revealLink: 'https://www.reddit.com/r/pics/comments/8aqjh/',
   },
   {
-    id: 'lc-02',
-    year: 2012,
-    category: 'legendary_comment',
-    promptTitle: 'Every Thread, Every Time',
-    promptTextRedacted:
-      'A user gave a detailed answer about a medical condition involving non-functional arms. The follow-up turned into a phrase referenced in nearly every comment section for years.',
-    revealContext:
-      'The "broken arms" AMA became one of Reddit\'s most infamous threads, spawning a reference that appeared in virtually every comment section for years afterward.',
-  },
-  {
     id: 'lc-03',
     year: 2014,
     category: 'legendary_comment',
@@ -69,16 +59,6 @@ export const MOMENTS: Moment[] = [
     revealLink: 'https://www.reddit.com/r/AskReddit/comments/elal2/',
   },
   {
-    id: 'lc-06',
-    year: 2011,
-    category: 'legendary_comment',
-    promptTitle: 'The Museum of Filth',
-    promptTextRedacted:
-      'A user compiled a master list of the platform\'s most notorious stories into one comment. The collection became a rite of passage — new users were both warned about and dared to read it.',
-    revealContext:
-      'The Reddit "Museum of Filth" linked to legendary gross-out stories (Swamps of Dagobah, Jolly Rancher, Coconut, etc.) in one infamous comment. Proceed at your own risk.',
-  },
-  {
     id: 'lc-07',
     year: 2013,
     category: 'legendary_comment',
@@ -101,17 +81,6 @@ export const MOMENTS: Moment[] = [
     revealLink: 'https://www.reddit.com/r/Music/comments/56cdgm/',
   },
   {
-    id: 'lc-09',
-    year: 2014,
-    category: 'legendary_comment',
-    promptTitle: 'Dirty Talk Gone Wrong',
-    promptTextRedacted:
-      'In a thread about embarrassing intimate moments, a user shared what they said during a romantic encounter that was so hilariously wrong it became one of the most-repeated phrases on the platform.',
-    revealContext:
-      '"You like that, you fucking retard?" — a user\'s disastrous attempt at dirty talk became one of AskReddit\'s most legendary and quoted comments.',
-    revealLink: 'https://www.reddit.com/r/AskReddit/comments/1y6lhe/',
-  },
-  {
     id: 'lc-10',
     year: 2015,
     category: 'legendary_comment',
@@ -130,6 +99,7 @@ export const MOMENTS: Moment[] = [
       'A former military pilot shared an increasingly dramatic story about requesting speed checks from air traffic control, one-upping every other aircraft until the punchline. It became the most-reposted story on the platform.',
     revealContext:
       'The SR-71 Blackbird "ground speed check" story — a pilot requests a speed check, flexes on slower aircraft, and delivers the ultimate punchline. Reposted thousands of times across Reddit.',
+    revealLink: 'https://www.reddit.com/r/SR71/',
   },
   {
     id: 'lc-12',
@@ -140,6 +110,7 @@ export const MOMENTS: Moment[] = [
       'In a thread asking about the laziest thing anyone had ever done, a user shared a story about being on a Navy ship and using an incredibly creative method to avoid a minor physical task. The story became legendary.',
     revealContext:
       'A Navy sailor threw his trash out a porthole to avoid walking to the trash can, prompting an investigation into who was littering from the ship. The r/AskReddit response became iconic.',
+    revealLink: 'https://www.reddit.com/r/AskReddit/comments/1rgpdf/',
   },
 
   // ═══════════════════════════════════════
@@ -165,6 +136,7 @@ export const MOMENTS: Moment[] = [
       'The platform brought back its beloved collaborative pixel art experiment with a much larger canvas. It ran for several days and attracted even more participants than the original.',
     revealContext:
       'r/place returned in 2022 with an expanded canvas, more colors, and massive international coordination between communities.',
+    revealLink: 'https://www.reddit.com/r/place/',
   },
   {
     id: 'pe-03',
@@ -207,6 +179,7 @@ export const MOMENTS: Moment[] = [
       'The beloved pixel art experiment returned for a third time. This time, communities coordinated across multiple platforms and time zones to protect their creations around the clock.',
     revealContext:
       'r/place 2023 was the third iteration. Communities used Discord bots and overlay tools for pixel-perfect coordination, making it the most organized version yet.',
+    revealLink: 'https://www.reddit.com/r/place/',
   },
   {
     id: 'pe-07',
@@ -227,6 +200,7 @@ export const MOMENTS: Moment[] = [
       'The platform\'s front page was dominated by a single issue for days as nearly every major community rallied to defend an important internet policy. The coordinated campaign made international news.',
     revealContext:
       'Reddit\'s Net Neutrality campaign in 2017 saw nearly every subreddit coordinating to protest the FCC\'s proposed repeal. The front page was solid activism for days.',
+    revealLink: 'https://www.reddit.com/r/blog/comments/6mtgtp/',
   },
 
   // ═══════════════════════════════════════
@@ -251,6 +225,7 @@ export const MOMENTS: Moment[] = [
       'An image macro using a bear became the go-to way for users to confess embarrassing or controversial opinions. One confession went so dark it sparked real-world investigations.',
     revealContext:
       'Confession Bear peaked on Reddit\'s r/AdviceAnimals. One post appeared to confess to murder, attracting media coverage and debate about whether it was real.',
+    revealLink: 'https://www.reddit.com/r/AdviceAnimals/comments/1btuzb/',
   },
   {
     id: 'mm-03',
@@ -312,6 +287,7 @@ export const MOMENTS: Moment[] = [
       'A screenshot from a community group showed a person requesting free transportation for 20 people, then rudely dismissing every helpful suggestion with a single-word reply. The post defined an entire genre.',
     revealContext:
       'The "NEXT!" choosy beggar demanded free airport transport for 20 people and rejected every offer. Her aggressive "NEXT!" replies became the mascot of r/ChoosingBeggars.',
+    revealLink: 'https://www.reddit.com/r/ChoosingBeggars/comments/7kr5as/',
   },
   {
     id: 'mm-09',
@@ -332,6 +308,7 @@ export const MOMENTS: Moment[] = [
       'A specific phrase that users would add when their comment received a premium award became so ubiquitous and mocked that the community eventually turned against anyone who used it.',
     revealContext:
       '"Edit: Thanks for the gold, kind stranger!" became so overused that it spawned r/AwardSpeechEdits dedicated to mocking it. The backlash made it a meme in itself.',
+    revealLink: 'https://www.reddit.com/r/AwardSpeechEdits/',
   },
 
   // ═══════════════════════════════════════
@@ -346,6 +323,7 @@ export const MOMENTS: Moment[] = [
       'After a popular employee was fired, the community erupted in protest. Moderators took major communities private, and the interim CEO eventually resigned amid the backlash.',
     revealContext:
       'The firing of Victoria Taylor led to the 2015 Reddit Blackout. CEO Ellen Pao resigned shortly after, though she later revealed she had actually opposed the firing.',
+    revealLink: 'https://www.reddit.com/r/OutOfTheLoop/comments/3bxduw/',
   },
   {
     id: 'cv-02',
@@ -356,6 +334,7 @@ export const MOMENTS: Moment[] = [
       'The platform announced major pricing changes to its developer tools, effectively shutting down popular third-party mobile apps. Thousands of communities went dark in the largest protest ever.',
     revealContext:
       'Reddit\'s 2023 API pricing changes led to a massive subreddit blackout and the death of beloved apps like Apollo, Reddit is Fun, and Sync.',
+    revealLink: 'https://www.reddit.com/r/Save3rdPartyApps/',
   },
   {
     id: 'cv-03',
@@ -368,16 +347,6 @@ export const MOMENTS: Moment[] = [
       'During the Boston Marathon bombing investigation, Reddit users wrongly identified Sunil Tripathi as a suspect. He was later found deceased, unrelated to the bombing.',
   },
   {
-    id: 'cv-04',
-    year: 2014,
-    category: 'controversy',
-    promptTitle: 'The Leaked Photos Scandal',
-    promptTextRedacted:
-      'Private photos of celebrities were stolen and shared widely on the platform. The community hosting them was eventually banned after significant media pressure and legal threats.',
-    revealContext:
-      'The "Fappening" involved stolen celebrity photos shared via Reddit. The hosting subreddit was banned after public outcry and legal pressure from affected celebrities.',
-  },
-  {
     id: 'cv-05',
     year: 2016,
     category: 'controversy',
@@ -386,6 +355,7 @@ export const MOMENTS: Moment[] = [
       'The platform\'s CEO was caught secretly editing user comments in a controversial community, replacing mentions of his username with moderators\' names. Trust in the platform was shaken.',
     revealContext:
       'CEO Steve Huffman (u/spez) admitted to editing comments in r/the_donald that mentioned his username, sparking a massive trust crisis and the ongoing "f*ck u/spez" meme.',
+    revealLink: 'https://www.reddit.com/r/announcements/comments/5frg1n/',
   },
   {
     id: 'cv-06',
@@ -406,6 +376,7 @@ export const MOMENTS: Moment[] = [
       'The platform mourned one of its co-founders, a young tech activist who had fought for internet freedom. His passing at age 26 sparked conversations about justice, mental health, and digital rights.',
     revealContext:
       'Aaron Swartz, Reddit co-founder and internet freedom activist, died by suicide in January 2013 while facing federal charges for downloading academic papers. His loss deeply affected the community.',
+    revealLink: 'https://www.reddit.com/r/blog/comments/16p1ys/',
   },
   {
     id: 'cv-08',
@@ -416,6 +387,7 @@ export const MOMENTS: Moment[] = [
       'A famous actor did a Q&A that was so obviously handled by a PR team — with a badly photoshopped proof photo — that the community revolted. The backlash made it one of the worst Q&As in history.',
     revealContext:
       'Morgan Freeman\'s AMA was widely believed to be answered by a PR rep. The proof photo appeared to show him asleep with a paper on his chest. Answers were generic and the community was furious.',
+    revealLink: 'https://www.reddit.com/r/IAmA/comments/1c5zxh/',
   },
 
   // ═══════════════════════════════════════
@@ -441,6 +413,7 @@ export const MOMENTS: Moment[] = [
       'A major celebrity did a Q&A to promote a new project but gave short, dismissive answers and kept redirecting every question back to their project. The community was not amused.',
     revealContext:
       'Woody Harrelson\'s AMA became infamous when he only wanted to discuss his movie "Rampart" and ignored questions. "Let\'s focus on Rampart" became a meme for bad PR.',
+    revealLink: 'https://www.reddit.com/r/IAmA/comments/p9a1v/',
   },
   {
     id: 'sm-03',
@@ -505,6 +478,7 @@ export const MOMENTS: Moment[] = [
       'A famous rapper did a Q&A that was hilariously casual and genuinely fun. He used creative spelling, answered nearly everything, and became one of the platform\'s favorite celebrity guests.',
     revealContext:
       'Snoop Dogg\'s (then Snoop Lion) AMA was legendary for its authenticity. He answered hundreds of questions, his spelling was iconic ("81 blunts a day neffew"), and he became a Reddit regular.',
+    revealLink: 'https://www.reddit.com/r/IAmA/comments/14cb0c/',
   },
   {
     id: 'sm-09',
@@ -515,6 +489,7 @@ export const MOMENTS: Moment[] = [
       'A man wearing a distinctive red sweater became an instant celebrity after asking a question during a presidential debate. He did a Q&A the next day, but his post history was then scrutinized.',
     revealContext:
       'Ken Bone became an overnight sensation after the 2016 presidential debate. His AMA was popular, but users discovered his Reddit history under his real username, creating awkward headlines.',
+    revealLink: 'https://www.reddit.com/r/IAmA/comments/57dw9a/',
   },
   {
     id: 'sm-10',
@@ -546,6 +521,7 @@ export const MOMENTS: Moment[] = [
       'A former professional athlete did a Q&A that went completely off the rails. Their bizarre, unfiltered answers about time travel, aliens, and personal grudges made it an all-time classic.',
     revealContext:
       'Jose Canseco\'s AMA was hilariously unhinged — he discussed time travel, claimed to have evidence of aliens, and answered questions with wild sincerity. It\'s considered peak AMA entertainment.',
+    revealLink: 'https://www.reddit.com/r/IAmA/comments/1clw9o/',
   },
   {
     id: 'sm-13',
@@ -556,6 +532,7 @@ export const MOMENTS: Moment[] = [
       'A talk show host attempted a Q&A session but was met with overwhelmingly hostile questions about their alleged rude behavior in real life. Nearly every response was a complaint or insult.',
     revealContext:
       'James Corden\'s AMA became a roast session. Users flooded it with stories of his rude behavior. The ratio of hostile to friendly questions made it one of the most brutal AMAs ever.',
+    revealLink: 'https://www.reddit.com/r/IAmA/comments/bqy5zf/',
   },
   {
     id: 'sm-14',
@@ -566,6 +543,7 @@ export const MOMENTS: Moment[] = [
       'During a period when millions were working from home, a user accidentally went viral on a platform livestream for an embarrassing incident visible to their entire community.',
     revealContext:
       'Reddit Public Access Network (RPAN) launched during COVID lockdowns and became a hub for unexpected viral moments, from musicians to pets to accidental broadcasts.',
+    revealLink: 'https://www.reddit.com/r/pan/',
   },
 
   // ═══════════════════════════════════════
@@ -592,17 +570,6 @@ export const MOMENTS: Moment[] = [
     revealContext:
       '"I also choose this guy\'s dead wife" — a perfectly timed dark joke in an otherwise wholesome AskReddit thread. It became one of Reddit\'s most legendary one-liner comments.',
     revealLink: 'https://www.reddit.com/r/AskReddit/comments/5c79n0/',
-  },
-  {
-    id: 'vp-03',
-    year: 2018,
-    category: 'viral_post',
-    promptTitle: 'The Family Bathroom Tool',
-    promptTextRedacted:
-      'A user shared a confession about discovering that their family\'s unusual bathroom habit — involving a specific kitchen utensil — was not, in fact, something every family did.',
-    revealContext:
-      'The "poop knife" story: a family kept a knife to cut large stools. The user didn\'t realize this wasn\'t universal until visiting a friend\'s house. The term entered Reddit\'s permanent vocabulary.',
-    revealLink: 'https://www.reddit.com/r/confession/comments/7p8puq/',
   },
   {
     id: 'vp-04',
@@ -637,38 +604,6 @@ export const MOMENTS: Moment[] = [
       '"Putting Descartes before the horse" — a play on "putting the cart before the horse" in a philosophy discussion. Widely considered Reddit\'s single greatest pun.',
   },
   {
-    id: 'vp-07',
-    year: 2014,
-    category: 'viral_post',
-    promptTitle: 'The Most Unusual AMA',
-    promptTextRedacted:
-      'A user with an extremely rare anatomical condition did a Q&A that became one of the most-viewed posts in the platform\'s history. The community had... a lot of questions.',
-    revealContext:
-      'The "Double Dick Dude" AMA by a user claiming to have diphallia became one of Reddit\'s most legendary and viewed AMAs. It was later revealed to be largely fabricated.',
-  },
-  {
-    id: 'vp-08',
-    year: 2013,
-    category: 'viral_post',
-    promptTitle: 'The Operating Room Horror',
-    promptTextRedacted:
-      'A medical professional shared a story about a surgery gone nightmarishly wrong. The graphic details of what happened when they made the first incision made it the most infamous medical story on the platform.',
-    revealContext:
-      'The "Swamps of Dagobah" story from an OR nurse described a horrifying abscess drainage. Named after the Star Wars swamp, it remains one of Reddit\'s most notorious gross-out stories.',
-    revealLink: 'https://www.reddit.com/r/AskReddit/comments/xo41d/',
-  },
-  {
-    id: 'vp-09',
-    year: 2017,
-    category: 'viral_post',
-    promptTitle: 'The Tropical Fruit Incident',
-    promptTextRedacted:
-      'A user confessed to a deeply regrettable series of increasingly poor decisions involving a tropical fruit over the course of several days. Things got much, much worse each day.',
-    revealContext:
-      'The coconut TIFU described a user\'s ill-advised encounters with a coconut over multiple days that ended in horror. It spawned an entire wave of fruit-related TIFU copycats.',
-    revealLink: 'https://www.reddit.com/r/tifu/comments/6rr6ay/',
-  },
-  {
     id: 'vp-10',
     year: 2012,
     category: 'viral_post',
@@ -690,26 +625,6 @@ export const MOMENTS: Moment[] = [
     revealLink: 'https://www.reddit.com/r/tifu/comments/2tdbig/',
   },
   {
-    id: 'vp-12',
-    year: 2009,
-    category: 'viral_post',
-    promptTitle: 'The Candy Horror',
-    promptTextRedacted:
-      'A user shared a horrifying story involving a piece of candy during an intimate moment that turned out to be something far worse. It became one of the most notorious stories in platform history.',
-    revealContext:
-      'The Jolly Rancher story from r/AskReddit involved a candy discovery during an intimate moment that... wasn\'t a candy. A cornerstone of the Reddit "Museum of Filth."',
-  },
-  {
-    id: 'vp-13',
-    year: 2012,
-    category: 'viral_post',
-    promptTitle: 'The Shoebox',
-    promptTextRedacted:
-      'A user revealed that they had been using a specific container for a very personal purpose for years, then posted a photo of the horrifying result. The image haunted the platform.',
-    revealContext:
-      'The "cumbox" post showed a shoebox used for... personal purposes over many years. The photo of the deteriorated box became one of the most notorious images in Reddit history.',
-  },
-  {
     id: 'vp-14',
     year: 2016,
     category: 'viral_post',
@@ -729,6 +644,7 @@ export const MOMENTS: Moment[] = [
       'A user posted a multi-part saga about discovering suspicious messages on their spouse\'s phone. The community followed along in real-time as the story unfolded with twists and turns.',
     revealContext:
       'The "Jenny" TIFU saga — a user live-updated their discovery of a spouse\'s infidelity via text messages. The multi-part story captivated millions before being questioned as possibly fictional.',
+    revealLink: 'https://www.reddit.com/r/tifu/comments/2snn0q/',
   },
   {
     id: 'vp-16',
@@ -749,26 +665,6 @@ export const MOMENTS: Moment[] = [
       'A comment listing exactly three pieces of advice for anyone going through a breakup became so widely repeated that it turned into a meme format used across the entire platform for years.',
     revealContext:
       '"Delete Facebook, hit the gym, lawyer up" — originally sincere relationship advice that became the go-to sarcastic response to any relationship problem on Reddit.',
-  },
-  {
-    id: 'vp-18',
-    year: 2012,
-    category: 'viral_post',
-    promptTitle: 'The Dog Named After a Cheese',
-    promptTextRedacted:
-      'A multi-part saga involving a user, their pet, and their son\'s disturbing behavior toward the animal unfolded over several posts. The community was deeply divided on how to respond.',
-    revealContext:
-      'The "Colby" saga described a father discovering his son was abusing the family dog. The multi-update story divided the community and "Colby 2012" became a dark Reddit catchphrase.',
-  },
-  {
-    id: 'vp-19',
-    year: 2019,
-    category: 'viral_post',
-    promptTitle: 'The Beans on the Plane',
-    promptTextRedacted:
-      'A user confessed to eating an entire portion of a specific food — in a very conspicuous way — during a flight, earning them judgmental stares and a reaction from a nearby child that became the punchline.',
-    revealContext:
-      'A user ate an entire can of beans during a movie screening/flight and a kid loudly said "this n**** eating beans!" The embarrassment story became a widely shared meme.',
   },
   {
     id: 'vp-20',
