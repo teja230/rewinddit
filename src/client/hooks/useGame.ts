@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { PuzzleTodayResponse, SubmitResult } from '../../shared/api';
+import type {
+  LeaderboardEntry,
+  PuzzleTodayResponse,
+  SubmitResult,
+} from '../../shared/api';
 import { trpc } from '../trpc';
 
 export type GamePhase = 'loading' | 'quiz' | 'revealing' | 'results';
@@ -13,6 +17,11 @@ type GameState = {
   submitting: boolean;
   error: string | null;
   currentCard: number;
+  // Live leaderboard data (refreshed independently of the saved result)
+  liveLeaderboards: {
+    dailyTop: LeaderboardEntry[];
+    allTimeTop: LeaderboardEntry[];
+  } | null;
 };
 
 export const useGame = () => {
@@ -25,7 +34,21 @@ export const useGame = () => {
     submitting: false,
     error: null,
     currentCard: 0,
+    liveLeaderboards: null,
   });
+
+  // Fetch fresh leaderboards whenever we enter a results-showing phase
+  const fetchLeaderboards = useCallback(async () => {
+    try {
+      const lb = await trpc.leaderboards.query({ date: 'today' });
+      setState((prev) => ({
+        ...prev,
+        liveLeaderboards: { dailyTop: lb.dailyTop, allTimeTop: lb.allTimeTop },
+      }));
+    } catch (err) {
+      console.error('Failed to fetch leaderboards', err);
+    }
+  }, []);
 
   // Load today's puzzle on mount via tRPC
   useEffect(() => {
@@ -47,6 +70,7 @@ export const useGame = () => {
             submitting: false,
             error: null,
             currentCard: 0,
+            liveLeaderboards: null,
           });
         } else {
           setState({
@@ -58,6 +82,7 @@ export const useGame = () => {
             submitting: false,
             error: null,
             currentCard: 0,
+            liveLeaderboards: null,
           });
         }
       } catch (err) {
@@ -71,6 +96,13 @@ export const useGame = () => {
     };
     void load();
   }, []);
+
+  // Refresh leaderboards when entering results or revealing phase
+  useEffect(() => {
+    if (state.phase === 'results' || state.phase === 'revealing') {
+      void fetchLeaderboards();
+    }
+  }, [state.phase, fetchLeaderboards]);
 
   const setGuess = useCallback((momentId: string, year: number) => {
     setState((prev) => {
@@ -140,6 +172,9 @@ export const useGame = () => {
     ? state.puzzle.moments.every((m) => state.touched.has(m.id))
     : false;
 
+  // Merge: prefer live leaderboards over stale snapshot from result
+  const leaderboards = state.liveLeaderboards ?? state.result?.leaderboards ?? null;
+
   return {
     phase: state.phase,
     puzzle: state.puzzle,
@@ -150,6 +185,7 @@ export const useGame = () => {
     error: state.error,
     allGuessed,
     currentCard: state.currentCard,
+    leaderboards,
     setGuess,
     submit,
     goNext,

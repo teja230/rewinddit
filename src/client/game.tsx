@@ -2,7 +2,7 @@ import './index.css';
 
 import { StrictMode, useState, useCallback, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
-import { showToast } from '@devvit/web/client';
+import { showToast, navigateTo } from '@devvit/web/client';
 import { useGame } from './hooks/useGame';
 import type {
   MomentPrompt,
@@ -436,14 +436,12 @@ function ResultCard({ q }: { q: QuestionResult }) {
         {q.revealContext}
       </p>
       {q.revealLink && (
-        <a
-          href={q.revealLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-[#d93900] hover:underline mt-2 inline-block font-medium"
+        <button
+          onClick={() => navigateTo(q.revealLink!)}
+          className="text-sm text-[#d93900] hover:underline mt-2 inline-block font-medium cursor-pointer bg-transparent border-none p-0"
         >
           View original post &rarr;
-        </a>
+        </button>
       )}
     </div>
   );
@@ -547,6 +545,7 @@ export const App = () => {
     error,
     allGuessed,
     currentCard,
+    leaderboards,
     setGuess,
     submit,
     goNext,
@@ -724,15 +723,15 @@ export const App = () => {
             ))}
           </div>
 
-          {/* Leaderboards */}
+          {/* Leaderboards — fetched live, not from stale snapshot */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
             <Leaderboard
               title="Today's Top 10"
-              entries={result.leaderboards.dailyTop}
+              entries={leaderboards?.dailyTop ?? []}
             />
             <Leaderboard
               title="All-Time Top 10"
-              entries={result.leaderboards.allTimeTop}
+              entries={leaderboards?.allTimeTop ?? []}
             />
           </div>
 
