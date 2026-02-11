@@ -422,17 +422,44 @@ export const appRouter = t.router({
     }),
 
   postComment: t.procedure
-    .input(z.object({ text: z.string() }))
+    .input(z.object({ text: z.string(), date: z.string() }))
     .mutation(async ({ input }) => {
       const postId = context.postId;
       if (!postId) throw new Error('No post context available');
+      const userId = await getUserId();
+      const lockKey = K.commentsPosted(input.date);
 
-      await reddit.submitComment({
-        id: postId,
-        text: input.text,
-      });
+      // Atomic once-per-user-per-date gate.
+      const firstPost = await redis.hSetNX(lockKey, userId, new Date().toISOString());
+      if (firstPost === 0) {
+        return { success: true, alreadyPosted: true, postedAs: 'NONE' as const };
+      }
 
-      return { success: true };
+      try {
+        await reddit.submitComment({
+          id: postId,
+          text: input.text,
+          runAs: 'USER',
+        });
+        return { success: true, alreadyPosted: false, postedAs: 'USER' as const };
+      } catch (err) {
+        console.warn('Posting as USER failed, falling back to APP', err);
+      }
+
+      // Fallback for installations without asUser submit permission.
+      try {
+        await reddit.submitComment({
+          id: postId,
+          text: `Score by u/${userId}\n\n${input.text}`,
+          runAs: 'APP',
+        });
+      } catch (err) {
+        // Release lock so the user can retry if both posting paths fail.
+        await redis.hDel(lockKey, [userId]);
+        throw err;
+      }
+
+      return { success: true, alreadyPosted: false, postedAs: 'APP' as const };
     }),
 
   getHint: t.procedure

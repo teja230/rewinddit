@@ -39,6 +39,14 @@
       }
     }
   },
+  "permissions": {
+    "redis": true,
+    "reddit": {
+      "enable": true,
+      "scope": "user",
+      "asUser": ["SUBMIT_COMMENT"]
+    }
+  },
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build"

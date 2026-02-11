@@ -11,6 +11,7 @@ export const K = {
   bestScore: (userId: string) => `${KEY_PREFIX}:user:${userId}:bestScore`,
   achievements: (userId: string) => `${KEY_PREFIX}:user:${userId}:achievements`,
   hintsUsed: (date: string, userId: string) => `${KEY_PREFIX}:hints:${date}:${userId}`,
+  commentsPosted: (date: string) => `${KEY_PREFIX}:comments:${date}`,
   dailyLb: (date: string) => `${KEY_PREFIX}:lb:daily:${date}`,
   monthlyLb: (yearMonth: string) => `${KEY_PREFIX}:lb:monthly:${yearMonth}`,
   allTimeLb: `${KEY_PREFIX}:lb:alltime`,

@@ -237,13 +237,14 @@ export const useGame = () => {
   );
 
   const postToComments = useCallback(
-    async (text: string) => {
+    async (text: string, date: string): Promise<'posted' | 'already' | 'failed'> => {
       try {
-        await trpc.postComment.mutate({ text });
-        return true;
+        const res = await trpc.postComment.mutate({ text, date });
+        if (res.alreadyPosted) return 'already';
+        return 'posted';
       } catch (err) {
         console.error('Failed to post comment', err);
-        return false;
+        return 'failed';
       }
     },
     []

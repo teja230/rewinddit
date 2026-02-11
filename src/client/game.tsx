@@ -773,10 +773,10 @@ export const App = () => {
     if (!result || commentPosted) return;
     const grid = result.perQuestion.map((q) => getShareSquare(q.delta)).join('');
     const text = `**\u23ea Rewinddit ${result.date}**\n\n${grid} **${result.totalScore}/500**\n\n\ud83d\udd25 Streak: ${result.streak} | \ud83c\udfc6 Best Streak: ${result.bestStreak}`;
-    const ok = await postToComments(text);
-    if (ok) {
+    const status = await postToComments(text, result.date);
+    if (status === 'posted' || status === 'already') {
       setCommentPosted(true);
-      showToast('Score posted to comments!');
+      showToast(status === 'already' ? 'Already posted for today' : 'Score posted to comments!');
     } else {
       showToast('Failed to post comment');
     }
