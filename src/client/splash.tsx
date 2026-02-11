@@ -1,7 +1,7 @@
 import './index.css';
 
 import { requestExpandedMode } from '@devvit/web/client';
-import { StrictMode } from 'react';
+import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 const HowItWorks = () => (
@@ -30,6 +30,32 @@ const HowItWorks = () => (
 );
 
 export const Splash = () => {
+  const [username, setUsername] = useState<string>('there');
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      try {
+        const res = await fetch('/api/puzzle/today');
+        if (!res.ok) {
+          if (active) setUsername('there');
+          return;
+        }
+        const data = (await res.json()) as { currentUser?: string };
+        const next = data.currentUser && data.currentUser !== 'anonymous'
+          ? data.currentUser
+          : 'there';
+        if (active) setUsername(next);
+      } catch {
+        if (active) setUsername('there');
+      }
+    };
+    void load();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <div className="flex relative flex-col justify-center items-center min-h-screen gap-5 bg-gradient-to-b from-gray-50 to-orange-50/30 dark:from-gray-950 dark:to-gray-900">
       {/* Logo / Brand */}
@@ -50,7 +76,7 @@ export const Splash = () => {
         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
           5 historic Reddit moments, details redacted.
           <br />
-          Guess the year. How well do you know Reddit?
+          Hello {username}, how well do you know Reddit?
         </p>
       </div>
 

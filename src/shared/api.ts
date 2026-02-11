@@ -24,6 +24,8 @@ export type PuzzleTodayResponse = {
   hasPlayed: boolean;
   previousResult?: SubmitResult | undefined;
   currentUser: string;
+  postUrl: string;
+  playerCount: number;
 };
 
 // ── POST /api/submit ──
@@ -43,6 +45,20 @@ export type QuestionResult = {
   revealLink?: string | undefined;
 };
 
+export type QuestionDifficulty = {
+  id: string;
+  plays: number;
+  exactPercent: number;
+  avgDelta: number;
+};
+
+export type Achievement = {
+  id: string;
+  title: string;
+  emoji: string;
+  description: string;
+};
+
 export type LeaderboardEntry = {
   rank: number;
   userId: string;
@@ -57,9 +73,14 @@ export type SubmitResult = {
   streak: number;
   bestStreak: number;
   dailyRank?: number | undefined;
+  percentile: number;
+  streakMilestone?: number | undefined;
+  newAchievements: Achievement[];
+  questionDifficulty: QuestionDifficulty[];
   leaderboards: {
     dailyTop: LeaderboardEntry[];
     allTimeTop: LeaderboardEntry[];
+    monthlyTop: LeaderboardEntry[];
   };
 };
 
@@ -68,6 +89,26 @@ export type LeaderboardsResponse = {
   date: string;
   dailyTop: LeaderboardEntry[];
   allTimeTop: LeaderboardEntry[];
+  monthlyTop: LeaderboardEntry[];
+  playerCount: number;
+};
+
+// ── User stats ──
+export type UserStats = {
+  gamesPlayed: number;
+  totalScore: number;
+  averageScore: number;
+  bestScore: number;
+  currentStreak: number;
+  bestStreak: number;
+  achievements: Achievement[];
+};
+
+// ── Hint ──
+export type HintResponse = {
+  momentId: string;
+  hint: string;
+  pointsCost: number;
 };
 
 // ── Error response ──

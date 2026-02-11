@@ -3,6 +3,8 @@ import type {
   LeaderboardEntry,
   PuzzleTodayResponse,
   SubmitResult,
+  UserStats,
+  HintResponse,
 } from '../../shared/api';
 import { trpc } from '../trpc';
 
@@ -17,11 +19,14 @@ type GameState = {
   submitting: boolean;
   error: string | null;
   currentCard: number;
-  // Live leaderboard data (refreshed independently of the saved result)
   liveLeaderboards: {
     dailyTop: LeaderboardEntry[];
     allTimeTop: LeaderboardEntry[];
+    monthlyTop: LeaderboardEntry[];
+    playerCount: number;
   } | null;
+  hints: Record<string, HintResponse>;
+  userStats: UserStats | null;
 };
 
 export const useGame = () => {
@@ -35,22 +40,28 @@ export const useGame = () => {
     error: null,
     currentCard: 0,
     liveLeaderboards: null,
+    hints: {},
+    userStats: null,
   });
 
-  // Fetch fresh leaderboards whenever we enter a results-showing phase
   const fetchLeaderboards = useCallback(async () => {
     try {
       const lb = await trpc.leaderboards.query({ date: 'today' });
       setState((prev) => ({
         ...prev,
-        liveLeaderboards: { dailyTop: lb.dailyTop, allTimeTop: lb.allTimeTop },
+        liveLeaderboards: {
+          dailyTop: lb.dailyTop,
+          allTimeTop: lb.allTimeTop,
+          monthlyTop: lb.monthlyTop,
+          playerCount: lb.playerCount,
+        },
       }));
     } catch (err) {
       console.error('Failed to fetch leaderboards', err);
     }
   }, []);
 
-  // Load today's puzzle on mount via tRPC
+  // Load today's puzzle on mount
   useEffect(() => {
     const load = async () => {
       try {
@@ -71,6 +82,8 @@ export const useGame = () => {
             error: null,
             currentCard: 0,
             liveLeaderboards: null,
+            hints: {},
+            userStats: null,
           });
         } else {
           setState({
@@ -83,6 +96,8 @@ export const useGame = () => {
             error: null,
             currentCard: 0,
             liveLeaderboards: null,
+            hints: {},
+            userStats: null,
           });
         }
       } catch (err) {
@@ -103,6 +118,20 @@ export const useGame = () => {
       void fetchLeaderboards();
     }
   }, [state.phase, fetchLeaderboards]);
+
+  // Fetch user stats when entering results
+  useEffect(() => {
+    if (state.phase === 'results' && !state.userStats) {
+      void (async () => {
+        try {
+          const stats = await trpc.getUserStats.query();
+          setState((prev) => ({ ...prev, userStats: stats }));
+        } catch (err) {
+          console.error('Failed to fetch user stats', err);
+        }
+      })();
+    }
+  }, [state.phase, state.userStats]);
 
   const setGuess = useCallback((momentId: string, year: number) => {
     setState((prev) => {
@@ -168,14 +197,55 @@ export const useGame = () => {
     setState((prev) => ({ ...prev, phase: 'results' }));
   }, []);
 
+  const requestHint = useCallback(
+    async (momentId: string) => {
+      if (!state.puzzle || state.hints[momentId]) return;
+      try {
+        const hint = await trpc.getHint.query({
+          date: state.puzzle.date,
+          momentId,
+        });
+        setState((prev) => ({
+          ...prev,
+          hints: { ...prev.hints, [momentId]: hint },
+        }));
+      } catch (err) {
+        console.error('Failed to get hint', err);
+      }
+    },
+    [state.puzzle, state.hints]
+  );
+
+  const postToComments = useCallback(
+    async (text: string) => {
+      try {
+        await trpc.postComment.mutate({ text });
+        return true;
+      } catch (err) {
+        console.error('Failed to post comment', err);
+        return false;
+      }
+    },
+    []
+  );
+
   const allGuessed = state.puzzle
     ? state.puzzle.moments.every((m) => state.touched.has(m.id))
     : false;
 
-  // Merge: prefer live leaderboards over stale snapshot from result
-  const leaderboards = state.liveLeaderboards ?? state.result?.leaderboards ?? null;
+  const leaderboards = state.liveLeaderboards
+    ? {
+        dailyTop: state.liveLeaderboards.dailyTop,
+        allTimeTop: state.liveLeaderboards.allTimeTop,
+        monthlyTop: state.liveLeaderboards.monthlyTop,
+      }
+    : state.result?.leaderboards ?? null;
+
+  const playerCount =
+    state.liveLeaderboards?.playerCount ?? state.puzzle?.playerCount ?? 0;
 
   const currentUser = state.puzzle?.currentUser ?? null;
+  const postUrl = state.puzzle?.postUrl ?? '';
 
   return {
     phase: state.phase,
@@ -188,12 +258,18 @@ export const useGame = () => {
     allGuessed,
     currentCard: state.currentCard,
     leaderboards,
+    playerCount,
     currentUser,
+    postUrl,
+    hints: state.hints,
+    userStats: state.userStats,
     setGuess,
     submit,
     goNext,
     goPrev,
     goToCard,
     finishReveal,
+    requestHint,
+    postToComments,
   } as const;
 };
