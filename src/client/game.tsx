@@ -6,7 +6,7 @@ import {
   useCallback,
   useEffect,
   useRef,
-  useMemo,
+  type TouchEvent,
 } from 'react';
 import { createRoot } from 'react-dom/client';
 import { showToast, navigateTo } from '@devvit/web/client';
@@ -65,25 +65,44 @@ function getRankMedal(rank: number): string {
   return '';
 }
 
+type ConfettiPiece = {
+  id: number;
+  left: string;
+  delay: string;
+  duration: string;
+  color: string;
+  size: number;
+  shape: 'circle' | 'square';
+};
+
+function pseudoRandom(seed: number): number {
+  const x = Math.sin(seed * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+const CONFETTI_COLORS = ['#d93900', '#ff6b35', '#ffd700', '#16a34a', '#3b82f6', '#a855f7'];
+const CONFETTI_PIECES: ConfettiPiece[] = Array.from({ length: 40 }, (_, i) => {
+  const r1 = pseudoRandom(i + 1);
+  const r2 = pseudoRandom(i + 101);
+  const r3 = pseudoRandom(i + 201);
+  const r4 = pseudoRandom(i + 301);
+  return {
+    id: i,
+    left: `${r1 * 100}%`,
+    delay: `${r2 * 2}s`,
+    duration: `${2 + r3 * 2}s`,
+    color: CONFETTI_COLORS[i % CONFETTI_COLORS.length]!,
+    size: 6 + r4 * 8,
+    shape: pseudoRandom(i + 401) > 0.5 ? 'circle' : 'square',
+  };
+});
+
 // ── Confetti ──
 
 function Confetti() {
-  const pieces = useMemo(() => {
-    const colors = ['#d93900', '#ff6b35', '#ffd700', '#16a34a', '#3b82f6', '#a855f7'];
-    return Array.from({ length: 40 }, (_, i) => ({
-      id: i,
-      left: `${Math.random() * 100}%`,
-      delay: `${Math.random() * 2}s`,
-      duration: `${2 + Math.random() * 2}s`,
-      color: colors[i % colors.length],
-      size: 6 + Math.random() * 8,
-      shape: Math.random() > 0.5 ? 'circle' : 'square',
-    }));
-  }, []);
-
   return (
     <div className="confetti-container">
-      {pieces.map((p) => (
+      {CONFETTI_PIECES.map((p) => (
         <div
           key={p.id}
           className="confetti-piece"
@@ -709,13 +728,13 @@ function useSwipe(onSwipeLeft: () => void, onSwipeRight: () => void) {
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
-  const onTouchStart = useCallback((e: React.TouchEvent) => {
+  const onTouchStart = useCallback((e: TouchEvent) => {
     touchStartX.current = e.touches[0]!.clientX;
     touchStartY.current = e.touches[0]!.clientY;
   }, []);
 
   const onTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
+    (e: TouchEvent) => {
       const deltaX = e.changedTouches[0]!.clientX - touchStartX.current;
       const deltaY = e.changedTouches[0]!.clientY - touchStartY.current;
 
@@ -755,17 +774,7 @@ export const App = () => {
   } = useGame();
 
   const swipeHandlers = useSwipe(goNext, goPrev);
-
-  const [showConfetti, setShowConfetti] = useState(false);
-
-  // Trigger confetti for high scores
-  useEffect(() => {
-    if (phase === 'results' && result && result.totalScore >= 400) {
-      setShowConfetti(true);
-      const timer = setTimeout(() => setShowConfetti(false), 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [phase, result]);
+  const showConfetti = phase === 'results' && (result?.totalScore ?? 0) >= 400;
 
   const handleShare = useCallback(() => {
     if (!result) return;
