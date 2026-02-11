@@ -111,6 +111,7 @@ export function scoreGuesses(
     const points = calculatePoints(delta);
     return {
       id,
+      promptTitle: moment.promptTitle,
       guess,
       actual: moment.year,
       delta,

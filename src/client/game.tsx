@@ -1,6 +1,13 @@
 import './index.css';
 
-import { StrictMode, useState, useCallback, useEffect, useRef } from 'react';
+import {
+  StrictMode,
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  useMemo,
+} from 'react';
 import { createRoot } from 'react-dom/client';
 import { showToast, navigateTo } from '@devvit/web/client';
 import { useGame } from './hooks/useGame';
@@ -11,24 +18,15 @@ import type {
   SubmitResult,
 } from '../shared/api';
 
-// ── Category badge colors ──
+// ── Category config with emojis ──
 
-const CATEGORY_COLORS: Record<string, string> = {
-  legendary_comment: 'bg-amber-100 text-amber-800',
-  platform_event: 'bg-blue-100 text-blue-800',
-  meme: 'bg-pink-100 text-pink-800',
-  controversy: 'bg-red-100 text-red-800',
-  subreddit_moment: 'bg-green-100 text-green-800',
-  viral_post: 'bg-purple-100 text-purple-800',
-};
-
-const CATEGORY_LABELS: Record<string, string> = {
-  legendary_comment: 'Legendary Comment',
-  platform_event: 'Platform Event',
-  meme: 'Meme',
-  controversy: 'Controversy',
-  subreddit_moment: 'Subreddit Moment',
-  viral_post: 'Viral Post',
+const CATEGORY_CONFIG: Record<string, { color: string; label: string; emoji: string }> = {
+  legendary_comment: { color: 'bg-amber-100 text-amber-800 border-amber-200', label: 'Legendary Comment', emoji: '\ud83d\udcac' },
+  platform_event: { color: 'bg-blue-100 text-blue-800 border-blue-200', label: 'Platform Event', emoji: '\ud83c\udfaa' },
+  meme: { color: 'bg-pink-100 text-pink-800 border-pink-200', label: 'Meme', emoji: '\ud83d\ude02' },
+  controversy: { color: 'bg-red-100 text-red-800 border-red-200', label: 'Controversy', emoji: '\ud83d\udd25' },
+  subreddit_moment: { color: 'bg-green-100 text-green-800 border-green-200', label: 'Subreddit Moment', emoji: '\ud83c\udf1f' },
+  viral_post: { color: 'bg-purple-100 text-purple-800 border-purple-200', label: 'Viral Post', emoji: '\ud83d\ude80' },
 };
 
 // ── Helpers ──
@@ -60,7 +58,96 @@ function getScoreReaction(score: number): { text: string; emoji: string } {
   return { text: 'Lurker Detected', emoji: '\ud83d\udc40' };
 }
 
-// ── Year Picker ──
+function getRankMedal(rank: number): string {
+  if (rank === 1) return '\ud83e\udd47';
+  if (rank === 2) return '\ud83e\udd48';
+  if (rank === 3) return '\ud83e\udd49';
+  return '';
+}
+
+// ── Confetti ──
+
+function Confetti() {
+  const pieces = useMemo(() => {
+    const colors = ['#d93900', '#ff6b35', '#ffd700', '#16a34a', '#3b82f6', '#a855f7'];
+    return Array.from({ length: 40 }, (_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      delay: `${Math.random() * 2}s`,
+      duration: `${2 + Math.random() * 2}s`,
+      color: colors[i % colors.length],
+      size: 6 + Math.random() * 8,
+      shape: Math.random() > 0.5 ? 'circle' : 'square',
+    }));
+  }, []);
+
+  return (
+    <div className="confetti-container">
+      {pieces.map((p) => (
+        <div
+          key={p.id}
+          className="confetti-piece"
+          style={{
+            left: p.left,
+            animationDelay: p.delay,
+            animationDuration: p.duration,
+            width: p.size,
+            height: p.size,
+            backgroundColor: p.color,
+            borderRadius: p.shape === 'circle' ? '50%' : '2px',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Skeleton Loading ──
+
+function SkeletonLoader() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-lg mx-auto px-4 py-6">
+        {/* Header skeleton */}
+        <div className="flex flex-col items-center gap-2 mb-6">
+          <div className="skeleton w-32 h-7" />
+          <div className="skeleton w-20 h-4" />
+        </div>
+
+        {/* Progress dots skeleton */}
+        <div className="flex justify-center gap-2.5 mb-4">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="w-3 h-3 rounded-full bg-gray-200" />
+          ))}
+        </div>
+
+        {/* Card skeleton */}
+        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5">
+          <div className="skeleton w-28 h-6 rounded-full mb-3" />
+          <div className="skeleton w-3/4 h-6 mb-3" />
+          <div className="space-y-2 mb-6">
+            <div className="skeleton w-full h-4" />
+            <div className="skeleton w-full h-4" />
+            <div className="skeleton w-2/3 h-4" />
+          </div>
+          <div className="flex flex-col items-center gap-3">
+            <div className="skeleton w-24 h-12 rounded-lg" />
+            <div className="flex items-center gap-3 w-full">
+              <div className="skeleton w-14 h-14 rounded-2xl shrink-0" />
+              <div className="skeleton flex-1 h-2 rounded-full" />
+              <div className="skeleton w-14 h-14 rounded-2xl shrink-0" />
+            </div>
+          </div>
+        </div>
+
+        {/* Button skeleton */}
+        <div className="skeleton w-full h-12 rounded-full mt-6" />
+      </div>
+    </div>
+  );
+}
+
+// ── Year Picker with filled track ──
 
 function YearPicker({
   momentId,
@@ -110,6 +197,12 @@ function YearPicker({
     return () => stopIncrement();
   }, [stopIncrement]);
 
+  // Filled track percentage
+  const progress = ((year - minYear) / (maxYear - minYear)) * 100;
+  const trackStyle = isTouched
+    ? { background: `linear-gradient(to right, #d93900 0%, #d93900 ${progress}%, #e5e7eb ${progress}%, #e5e7eb 100%)` }
+    : { background: '#e5e7eb' };
+
   return (
     <div className="flex flex-col items-center gap-3 w-full mt-4">
       <div
@@ -118,9 +211,15 @@ function YearPicker({
         {isTouched ? year : '????'}
       </div>
 
+      {!isTouched && (
+        <p className="text-xs text-gray-400 -mt-1" style={{ animation: 'swipe-hint 2s ease-in-out infinite' }}>
+          Slide to guess the year
+        </p>
+      )}
+
       <div className="flex items-center gap-3 w-full">
         <button
-          className="w-14 h-14 rounded-2xl bg-gray-100 text-gray-700 font-bold text-2xl flex items-center justify-center shrink-0 cursor-pointer hover:bg-gray-200 active:bg-gray-300 active:scale-95 transition-all select-none"
+          className="w-14 h-14 rounded-2xl bg-gray-100 text-gray-700 font-bold text-2xl flex items-center justify-center shrink-0 cursor-pointer hover:bg-gray-200 active:bg-gray-300 transition-all select-none press-feedback"
           onPointerDown={() => startIncrement(-1)}
           onPointerUp={stopIncrement}
           onPointerLeave={stopIncrement}
@@ -136,11 +235,12 @@ function YearPicker({
           value={year}
           onChange={(e) => onChange(momentId, parseInt(e.target.value))}
           className="flex-1 h-2 cursor-pointer"
+          style={trackStyle}
           step={1}
         />
 
         <button
-          className="w-14 h-14 rounded-2xl bg-gray-100 text-gray-700 font-bold text-2xl flex items-center justify-center shrink-0 cursor-pointer hover:bg-gray-200 active:bg-gray-300 active:scale-95 transition-all select-none"
+          className="w-14 h-14 rounded-2xl bg-gray-100 text-gray-700 font-bold text-2xl flex items-center justify-center shrink-0 cursor-pointer hover:bg-gray-200 active:bg-gray-300 transition-all select-none press-feedback"
           onPointerDown={() => startIncrement(1)}
           onPointerUp={stopIncrement}
           onPointerLeave={stopIncrement}
@@ -158,10 +258,11 @@ function YearPicker({
   );
 }
 
-// ── Quiz Card ──
+// ── Quiz Card with numbered badge and category emoji ──
 
 function QuizCard({
   moment,
+  index,
   year,
   minYear,
   maxYear,
@@ -169,26 +270,34 @@ function QuizCard({
   onChange,
 }: {
   moment: MomentPrompt;
+  index: number;
   year: number;
   minYear: number;
   maxYear: number;
   isTouched: boolean;
   onChange: (id: string, year: number) => void;
 }) {
-  const catColor =
-    CATEGORY_COLORS[moment.category] ?? 'bg-gray-100 text-gray-700';
-  const catLabel = CATEGORY_LABELS[moment.category] ?? moment.category;
+  const config = CATEGORY_CONFIG[moment.category] ?? {
+    color: 'bg-gray-100 text-gray-700 border-gray-200',
+    label: moment.category,
+    emoji: '\u2753',
+  };
 
   return (
     <div
-      className="bg-white rounded-2xl shadow-md border border-gray-100 p-5"
+      className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 relative"
       style={{ animation: 'slideIn 0.3s ease-out' }}
     >
-      <div className="mb-3">
+      {/* Question number badge */}
+      <div className="absolute -top-3 -left-2 w-8 h-8 rounded-full bg-[#d93900] text-white text-sm font-bold flex items-center justify-center shadow-md">
+        {index + 1}
+      </div>
+
+      <div className="mb-3 ml-4">
         <span
-          className={`text-xs font-semibold px-2.5 py-1 rounded-full ${catColor}`}
+          className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${config.color}`}
         >
-          {catLabel}
+          {config.emoji} {config.label}
         </span>
       </div>
       <h3 className="font-bold text-gray-900 text-lg mb-2">
@@ -225,7 +334,7 @@ function ProgressDots({
   onDotClick: (index: number) => void;
 }) {
   return (
-    <div className="flex items-center justify-center gap-2.5 mb-4">
+    <div className="flex items-center justify-center gap-2 mb-4">
       {Array.from({ length: total }, (_, i) => {
         const isActive = i === current;
         const isDone = momentIds[i] ? touched.has(momentIds[i]) : false;
@@ -235,7 +344,7 @@ function ProgressDots({
             onClick={() => onDotClick(i)}
             className={`rounded-full transition-all duration-200 cursor-pointer ${
               isActive
-                ? 'w-3.5 h-3.5 bg-[#d93900] ring-2 ring-[#d93900]/30'
+                ? 'w-8 h-3 bg-[#d93900] rounded-full'
                 : isDone
                   ? 'w-3 h-3 bg-[#d93900]/50'
                   : 'w-3 h-3 bg-gray-200'
@@ -248,7 +357,7 @@ function ProgressDots({
   );
 }
 
-// ── Reveal Screen ──
+// ── Reveal Screen with question titles ──
 
 function RevealScreen({
   result,
@@ -280,6 +389,9 @@ function RevealScreen({
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Revealing...</h1>
+          <p className="text-xs text-gray-400 mt-1">
+            {revealedCount}/{result.perQuestion.length} answers
+          </p>
         </div>
 
         <div className="space-y-3">
@@ -292,16 +404,22 @@ function RevealScreen({
                 : q.points >= 30
                   ? 'text-yellow-600'
                   : 'text-red-500';
+            const isPerfect = q.delta === 0;
 
             return (
               <div
                 key={q.id}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4"
+                className={`bg-white rounded-xl shadow-sm border p-4 ${isPerfect ? 'border-green-300 ring-1 ring-green-200' : 'border-gray-200'}`}
                 style={{ animation: 'popIn 0.4s ease-out' }}
               >
+                <p className="text-xs font-semibold text-gray-500 mb-2">
+                  {q.promptTitle}
+                </p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">{emoji}</span>
+                    <span className="text-2xl" style={isPerfect ? { animation: 'celebrate-bounce 0.6s ease-in-out' } : undefined}>
+                      {emoji}
+                    </span>
                     <div>
                       <div className="flex items-center gap-2 text-sm">
                         <span className="text-gray-500">Guessed</span>
@@ -312,7 +430,7 @@ function RevealScreen({
                       </div>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {q.delta === 0
-                          ? 'Nailed it!'
+                          ? 'Nailed it! \ud83c\udf89'
                           : `${q.delta} year${q.delta > 1 ? 's' : ''} off`}
                       </p>
                     </div>
@@ -351,15 +469,21 @@ function RevealScreen({
   );
 }
 
-// ── Score Ring ──
+// ── Score Ring with mount animation ──
 
 function ScoreRing({ score, maxScore }: { score: number; maxScore: number }) {
+  const [animated, setAnimated] = useState(false);
   const percent = score / maxScore;
   const circumference = 2 * Math.PI * 54;
-  const offset = circumference * (1 - percent);
+  const offset = animated ? circumference * (1 - percent) : circumference;
   const color =
     percent >= 0.7 ? '#16a34a' : percent >= 0.4 ? '#ca8a04' : '#ef4444';
   const reaction = getScoreReaction(score);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setAnimated(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="flex flex-col items-center">
@@ -383,11 +507,13 @@ function ScoreRing({ score, maxScore }: { score: number; maxScore: number }) {
             strokeDasharray={circumference}
             strokeDashoffset={offset}
             strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 1s ease-out' }}
+            style={{ transition: 'stroke-dashoffset 1.2s ease-out' }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-black text-gray-900">{score}</span>
+          <span className="text-3xl font-black text-gray-900" style={{ animation: animated ? 'score-count 0.5s ease-out 0.3s both' : undefined }}>
+            {score}
+          </span>
           <span className="text-xs text-gray-400">/500</span>
         </div>
       </div>
@@ -399,7 +525,7 @@ function ScoreRing({ score, maxScore }: { score: number; maxScore: number }) {
   );
 }
 
-// ── Result Card ──
+// ── Result Card with question title ──
 
 function ResultCard({ q }: { q: QuestionResult }) {
   const emoji = getScoreEmoji(q.delta);
@@ -409,23 +535,22 @@ function ResultCard({ q }: { q: QuestionResult }) {
       : q.points >= 30
         ? 'text-yellow-600'
         : 'text-red-500';
+  const isPerfect = q.delta === 0;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+    <div className={`bg-white rounded-xl shadow-sm border p-4 ${isPerfect ? 'border-green-300' : 'border-gray-200'}`}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <span className="text-2xl">{emoji}</span>
           <div>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="font-bold">{q.guess}</span>
-              <span className="text-gray-400">vs</span>
-              <span className="font-bold">{q.actual}</span>
+            <p className="text-sm font-semibold text-gray-900">{q.promptTitle}</p>
+            <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+              <span>Guessed <span className="font-bold text-gray-700">{q.guess}</span></span>
+              <span className="text-gray-300">|</span>
+              <span>Actual <span className="font-bold text-gray-700">{q.actual}</span></span>
+              <span className="text-gray-300">|</span>
+              <span>{q.delta === 0 ? 'Exact!' : `${q.delta}yr off`}</span>
             </div>
-            <p className="text-xs text-gray-400">
-              {q.delta === 0
-                ? 'Exact match!'
-                : `${q.delta} year${q.delta > 1 ? 's' : ''} off`}
-            </p>
           </div>
         </div>
         <span className={`text-lg font-black ${pointsColor}`}>
@@ -447,14 +572,43 @@ function ResultCard({ q }: { q: QuestionResult }) {
   );
 }
 
-// ── Leaderboard ──
+// ── Share Card (visual grid) ──
+
+function ShareCard({ result }: { result: SubmitResult }) {
+  const DELTA_COLORS: Record<number, string> = {
+    0: 'bg-green-500',
+    1: 'bg-green-400',
+    2: 'bg-yellow-400',
+    3: 'bg-orange-400',
+    4: 'bg-red-400',
+    5: 'bg-red-500',
+  };
+
+  return (
+    <div className="flex items-center justify-center gap-1.5 my-3">
+      {result.perQuestion.map((q) => (
+        <div
+          key={q.id}
+          className={`w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold ${DELTA_COLORS[Math.min(q.delta, 5)] ?? 'bg-gray-800'}`}
+          title={`${q.promptTitle}: ${q.delta === 0 ? 'Exact!' : `${q.delta}yr off`}`}
+        >
+          {q.delta === 0 ? '\u2713' : q.delta}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Leaderboard with medals and user highlight ──
 
 function Leaderboard({
   title,
   entries,
+  currentUser,
 }: {
   title: string;
   entries: LeaderboardEntry[];
+  currentUser: string | null;
 }) {
   if (entries.length === 0) {
     return (
@@ -473,28 +627,44 @@ function Leaderboard({
         {title}
       </h3>
       <div className="space-y-1">
-        {entries.map((e) => (
-          <div
-            key={`${e.rank}-${e.username}`}
-            className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-gray-50"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-gray-400 w-6">
-                {e.rank}.
-              </span>
-              <span className="text-sm font-medium text-gray-800">
-                {e.username}
+        {entries.map((e) => {
+          const isMe = currentUser !== null && e.username === currentUser;
+          const medal = getRankMedal(e.rank);
+
+          return (
+            <div
+              key={`${e.rank}-${e.username}`}
+              className={`flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors ${
+                isMe
+                  ? 'bg-[#d93900]/10 ring-1 ring-[#d93900]/20'
+                  : 'bg-gray-50'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-gray-400 w-6">
+                  {medal || `${e.rank}.`}
+                </span>
+                <span className={`text-sm font-medium ${isMe ? 'text-[#d93900] font-bold' : 'text-gray-800'}`}>
+                  {e.username}
+                  {isMe && (
+                    <span className="ml-1.5 text-[10px] bg-[#d93900] text-white px-1.5 py-0.5 rounded-full font-bold uppercase">
+                      You
+                    </span>
+                  )}
+                </span>
+              </div>
+              <span className={`text-sm font-bold ${isMe ? 'text-[#d93900]' : 'text-[#d93900]'}`}>
+                {e.score}
               </span>
             </div>
-            <span className="text-sm font-bold text-[#d93900]">{e.score}</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
 
-// ── Next puzzle countdown ──
+// ── Next puzzle countdown in a card ──
 
 function NextPuzzleCountdown() {
   const [timeLeft, setTimeLeft] = useState('');
@@ -523,13 +693,42 @@ function NextPuzzleCountdown() {
   }, []);
 
   return (
-    <div className="text-center py-4">
-      <p className="text-xs text-gray-400 uppercase tracking-wide">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center mt-4">
+      <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
         Next puzzle in
       </p>
       <p className="text-2xl font-bold text-gray-700 font-mono">{timeLeft}</p>
+      <p className="text-xs text-gray-400 mt-1">Come back tomorrow for a new challenge!</p>
     </div>
   );
+}
+
+// ── Swipe hook ──
+
+function useSwipe(onSwipeLeft: () => void, onSwipeRight: () => void) {
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0]!.clientX;
+    touchStartY.current = e.touches[0]!.clientY;
+  }, []);
+
+  const onTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      const deltaX = e.changedTouches[0]!.clientX - touchStartX.current;
+      const deltaY = e.changedTouches[0]!.clientY - touchStartY.current;
+
+      // Only trigger if horizontal swipe is dominant and significant
+      if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+        if (deltaX < 0) onSwipeLeft();
+        else onSwipeRight();
+      }
+    },
+    [onSwipeLeft, onSwipeRight]
+  );
+
+  return { onTouchStart, onTouchEnd };
 }
 
 // ── Main App ──
@@ -546,6 +745,7 @@ export const App = () => {
     allGuessed,
     currentCard,
     leaderboards,
+    currentUser,
     setGuess,
     submit,
     goNext,
@@ -554,33 +754,54 @@ export const App = () => {
     finishReveal,
   } = useGame();
 
+  const swipeHandlers = useSwipe(goNext, goPrev);
+
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  // Trigger confetti for high scores
+  useEffect(() => {
+    if (phase === 'results' && result && result.totalScore >= 400) {
+      setShowConfetti(true);
+      const timer = setTimeout(() => setShowConfetti(false), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [phase, result]);
+
   const handleShare = useCallback(() => {
     if (!result) return;
     const grid = result.perQuestion.map((q) => getShareSquare(q.delta)).join('');
     const text = [
-      `Rewinddit ${result.date}`,
+      `\u23ea Rewinddit ${result.date}`,
       `${grid} ${result.totalScore}/500`,
-      `Streak: ${result.streak}`,
+      `\ud83d\udd25 Streak: ${result.streak}`,
     ].join('\n');
     void navigator.clipboard.writeText(text).then(() => {
       showToast('Copied to clipboard!');
     });
   }, [result]);
 
-  // Loading
+  // Loading — skeleton
   if (phase === 'loading') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-gray-200 border-t-[#d93900] rounded-full animate-spin" />
-          <p className="text-sm text-gray-500">Loading today's puzzle...</p>
-          {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
+    if (error) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3 px-6 text-center">
+            <span className="text-4xl">{'\u26a0\ufe0f'}</span>
+            <p className="text-sm text-red-500">{error}</p>
+            <button
+              className="text-sm text-[#d93900] font-medium cursor-pointer"
+              onClick={() => window.location.reload()}
+            >
+              Try again
+            </button>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+    return <SkeletonLoader />;
   }
 
-  // Quiz — one card at a time
+  // Quiz — one card at a time with swipe
   if (phase === 'quiz' && puzzle) {
     const currentMoment = puzzle.moments[currentCard]!;
     const midYear = Math.round((puzzle.minYear + puzzle.maxYear) / 2);
@@ -590,9 +811,16 @@ export const App = () => {
 
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-lg mx-auto px-4 py-6">
+        <div
+          className="max-w-lg mx-auto px-4 py-6"
+          onTouchStart={swipeHandlers.onTouchStart}
+          onTouchEnd={swipeHandlers.onTouchEnd}
+        >
+          {/* Header */}
           <div className="text-center mb-4">
-            <h1 className="text-xl font-bold text-gray-900">Rewinddit</h1>
+            <h1 className="text-xl font-black text-gray-900 tracking-tight">
+              {'\u23ea'} Rewinddit
+            </h1>
             <p className="text-xs text-gray-400 mt-0.5">{puzzle.date}</p>
           </div>
 
@@ -611,6 +839,7 @@ export const App = () => {
           <QuizCard
             key={currentMoment.id}
             moment={currentMoment}
+            index={currentCard}
             year={guesses[currentMoment.id] ?? midYear}
             minYear={puzzle.minYear}
             maxYear={puzzle.maxYear}
@@ -621,7 +850,7 @@ export const App = () => {
           <div className="flex gap-3 mt-6">
             {!isFirstCard && (
               <button
-                className="flex-1 py-3 rounded-full font-semibold bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200 active:bg-gray-300 transition-colors"
+                className="flex-1 py-3 rounded-full font-semibold bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200 transition-colors press-feedback"
                 onClick={goPrev}
               >
                 Previous
@@ -630,9 +859,9 @@ export const App = () => {
 
             {!isLastCard ? (
               <button
-                className={`flex-1 py-3 rounded-full font-semibold cursor-pointer transition-all ${
+                className={`flex-1 py-3 rounded-full font-semibold cursor-pointer transition-all press-feedback ${
                   currentTouched
-                    ? 'bg-[#d93900] text-white hover:bg-[#c03000] active:bg-[#a02800]'
+                    ? 'bg-[#d93900] text-white hover:bg-[#c03000]'
                     : 'bg-gray-200 text-gray-500'
                 }`}
                 onClick={goNext}
@@ -641,7 +870,7 @@ export const App = () => {
               </button>
             ) : (
               <button
-                className="flex-1 py-3 rounded-full text-white font-semibold text-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-[#d93900] hover:bg-[#c03000] active:bg-[#a02800]"
+                className="flex-1 py-3 rounded-full text-white font-semibold text-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-[#d93900] hover:bg-[#c03000] press-feedback"
                 disabled={!allGuessed || submitting}
                 onClick={submit}
               >
@@ -667,13 +896,17 @@ export const App = () => {
   if (phase === 'results' && result) {
     return (
       <div className="min-h-screen bg-gray-50">
+        {showConfetti && <Confetti />}
+
         <div className="max-w-lg mx-auto px-4 py-6">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Rewinddit</h1>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight">
+              {'\u23ea'} Rewinddit
+            </h1>
             <p className="text-xs text-gray-400 mt-0.5">{result.date}</p>
           </div>
 
-          {/* Score ring + reaction */}
+          {/* Score ring + stats */}
           <div
             className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-6"
             style={{ animation: 'fadeIn 0.5s ease-out' }}
@@ -681,7 +914,10 @@ export const App = () => {
             <div className="flex flex-col items-center">
               <ScoreRing score={result.totalScore} maxScore={500} />
 
-              <div className="flex justify-center gap-6 mt-4">
+              {/* Visual share grid */}
+              <ShareCard result={result} />
+
+              <div className="flex justify-center gap-6 mt-2">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-gray-900">
                     {result.streak}
@@ -705,33 +941,37 @@ export const App = () => {
               </div>
 
               <button
-                className="mt-5 px-6 py-2.5 rounded-full bg-[#d93900] text-white font-semibold cursor-pointer hover:bg-[#c03000] active:bg-[#a02800] transition-colors"
+                className="mt-5 px-6 py-2.5 rounded-full bg-[#d93900] text-white font-semibold cursor-pointer hover:bg-[#c03000] transition-colors press-feedback shadow-lg shadow-[#d93900]/20"
                 onClick={handleShare}
               >
-                Share Results
+                {'\ud83d\udcf1'} Share Results
               </button>
             </div>
           </div>
 
-          {/* Per-question reveals — auto-expanded */}
+          {/* Per-question reveals */}
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-            Results
+            Breakdown
           </h2>
           <div className="space-y-3 mb-6">
-            {result.perQuestion.map((q) => (
-              <ResultCard key={q.id} q={q} />
+            {result.perQuestion.map((q, i) => (
+              <div key={q.id} style={{ animation: `fadeInUp 0.4s ease-out ${i * 0.08}s both` }}>
+                <ResultCard q={q} />
+              </div>
             ))}
           </div>
 
-          {/* Leaderboards — fetched live, not from stale snapshot */}
+          {/* Leaderboards */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
             <Leaderboard
               title="Today's Top 10"
               entries={leaderboards?.dailyTop ?? []}
+              currentUser={currentUser}
             />
             <Leaderboard
               title="All-Time Top 10"
               entries={leaderboards?.allTimeTop ?? []}
+              currentUser={currentUser}
             />
           </div>
 
@@ -745,7 +985,10 @@ export const App = () => {
   // Fallback
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <p className="text-gray-500">Something went wrong. Please reload.</p>
+      <div className="flex flex-col items-center gap-3">
+        <span className="text-4xl">{'\ud83e\udd14'}</span>
+        <p className="text-gray-500">Something went wrong. Please reload.</p>
+      </div>
     </div>
   );
 };

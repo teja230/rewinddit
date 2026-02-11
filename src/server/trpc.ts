@@ -114,6 +114,7 @@ export const appRouter = t.router({
       moments,
       hasPlayed,
       previousResult,
+      currentUser: userId,
     };
   }),
 

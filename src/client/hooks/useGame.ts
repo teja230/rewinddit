@@ -175,6 +175,8 @@ export const useGame = () => {
   // Merge: prefer live leaderboards over stale snapshot from result
   const leaderboards = state.liveLeaderboards ?? state.result?.leaderboards ?? null;
 
+  const currentUser = state.puzzle?.currentUser ?? null;
+
   return {
     phase: state.phase,
     puzzle: state.puzzle,
@@ -186,6 +188,7 @@ export const useGame = () => {
     allGuessed,
     currentCard: state.currentCard,
     leaderboards,
+    currentUser,
     setGuess,
     submit,
     goNext,

@@ -91,6 +91,7 @@ api.get('/puzzle/today', async (c) => {
       moments,
       hasPlayed,
       previousResult,
+      currentUser: userId,
     });
   } catch (error) {
     console.error('Error in puzzle/today:', error);

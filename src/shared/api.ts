@@ -23,6 +23,7 @@ export type PuzzleTodayResponse = {
   moments: MomentPrompt[];
   hasPlayed: boolean;
   previousResult?: SubmitResult | undefined;
+  currentUser: string;
 };
 
 // ── POST /api/submit ──
@@ -33,6 +34,7 @@ export type SubmitRequest = {
 
 export type QuestionResult = {
   id: string;
+  promptTitle: string;
   guess: number;
   actual: number;
   delta: number;
