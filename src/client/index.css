@@ -2,7 +2,7 @@
 
 /* ── Animations ── */
 
-@keyframes slideIn {
+@keyframes slideFromRight {
   from {
     opacity: 0;
     transform: translateX(24px);
@@ -13,14 +13,14 @@
   }
 }
 
-@keyframes slideOut {
+@keyframes slideFromLeft {
   from {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  to {
     opacity: 0;
     transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -146,6 +146,18 @@
   border-radius: 8px;
 }
 
+@media (prefers-color-scheme: dark) {
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      #374151 25%,
+      #4b5563 50%,
+      #374151 75%
+    );
+    background-size: 200% 100%;
+  }
+}
+
 /* ── Confetti particles ── */
 
 .confetti-container {
@@ -178,6 +190,12 @@ input[type='range'] {
   background: #e5e7eb;
 }
 
+@media (prefers-color-scheme: dark) {
+  input[type='range'] {
+    background: #374151;
+  }
+}
+
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -189,6 +207,12 @@ input[type='range']::-webkit-slider-thumb {
   border: 3px solid white;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   transition: transform 0.1s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  input[type='range']::-webkit-slider-thumb {
+    border-color: #1f2937;
+  }
 }
 
 input[type='range']::-webkit-slider-thumb:active {
@@ -205,6 +229,12 @@ input[type='range']::-moz-range-thumb {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
+@media (prefers-color-scheme: dark) {
+  input[type='range']::-moz-range-thumb {
+    border-color: #1f2937;
+  }
+}
+
 input[type='range']::-moz-range-progress {
   background: #d93900;
   border-radius: 9999px;
@@ -219,4 +249,30 @@ input[type='range']::-moz-range-progress {
 
 .press-feedback:active {
   transform: scale(0.96);
+}
+
+/* ── Focus indicators ── */
+
+:focus-visible {
+  outline: 2px solid #d93900;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #d93900;
+  outline-offset: 2px;
+}
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -20,14 +20,77 @@ import type {
 
 // ── Category config with emojis ──
 
-const CATEGORY_CONFIG: Record<string, { color: string; label: string; emoji: string }> = {
-  legendary_comment: { color: 'bg-amber-100 text-amber-800 border-amber-200', label: 'Legendary Comment', emoji: '\ud83d\udcac' },
-  platform_event: { color: 'bg-blue-100 text-blue-800 border-blue-200', label: 'Platform Event', emoji: '\ud83c\udfaa' },
-  meme: { color: 'bg-pink-100 text-pink-800 border-pink-200', label: 'Meme', emoji: '\ud83d\ude02' },
-  controversy: { color: 'bg-red-100 text-red-800 border-red-200', label: 'Controversy', emoji: '\ud83d\udd25' },
-  subreddit_moment: { color: 'bg-green-100 text-green-800 border-green-200', label: 'Subreddit Moment', emoji: '\ud83c\udf1f' },
-  viral_post: { color: 'bg-purple-100 text-purple-800 border-purple-200', label: 'Viral Post', emoji: '\ud83d\ude80' },
+const CATEGORY_CONFIG: Record<string, { color: string; darkColor: string; label: string; emoji: string }> = {
+  legendary_comment: { color: 'bg-amber-100 text-amber-800 border-amber-200', darkColor: 'dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700', label: 'Legendary Comment', emoji: '\ud83d\udcac' },
+  platform_event: { color: 'bg-blue-100 text-blue-800 border-blue-200', darkColor: 'dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700', label: 'Platform Event', emoji: '\ud83c\udfaa' },
+  meme: { color: 'bg-pink-100 text-pink-800 border-pink-200', darkColor: 'dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-700', label: 'Meme', emoji: '\ud83d\ude02' },
+  controversy: { color: 'bg-red-100 text-red-800 border-red-200', darkColor: 'dark:bg-red-900/30 dark:text-red-300 dark:border-red-700', label: 'Controversy', emoji: '\ud83d\udd25' },
+  subreddit_moment: { color: 'bg-green-100 text-green-800 border-green-200', darkColor: 'dark:bg-green-900/30 dark:text-green-300 dark:border-green-700', label: 'Subreddit Moment', emoji: '\ud83c\udf1f' },
+  viral_post: { color: 'bg-purple-100 text-purple-800 border-purple-200', darkColor: 'dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700', label: 'Viral Post', emoji: '\ud83d\ude80' },
 };
+
+// ── Sound engine (Web Audio API) ──
+
+let audioCtx: AudioContext | null = null;
+let soundEnabled = true;
+
+function getAudioCtx(): AudioContext | null {
+  if (!soundEnabled) return null;
+  try {
+    if (!audioCtx) audioCtx = new AudioContext();
+    if (audioCtx.state === 'suspended') void audioCtx.resume();
+    return audioCtx;
+  } catch {
+    return null;
+  }
+}
+
+function playTick() {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = 'sine';
+  osc.frequency.value = 800;
+  gain.gain.value = 0.04;
+  osc.start();
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+  osc.stop(ctx.currentTime + 0.05);
+}
+
+function playRevealSound(good: boolean) {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = 'sine';
+  osc.frequency.value = good ? 880 : 330;
+  gain.gain.value = 0.06;
+  osc.start();
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+  osc.stop(ctx.currentTime + 0.15);
+}
+
+function playCelebration() {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  [523, 659, 784, 1047].forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.value = 0.05;
+    osc.start(ctx.currentTime + i * 0.12);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.2);
+    osc.stop(ctx.currentTime + i * 0.12 + 0.2);
+  });
+}
 
 // ── Helpers ──
 
@@ -97,6 +160,41 @@ const CONFETTI_PIECES: ConfettiPiece[] = Array.from({ length: 40 }, (_, i) => {
   };
 });
 
+/** Generate dynamic year shortcuts based on current value */
+function getYearShortcuts(year: number, minYear: number, maxYear: number, isTouched: boolean): number[] {
+  if (!isTouched) {
+    // Spread shortcuts for initial rough positioning
+    return [2008, 2013, 2018, 2023].filter((y) => y >= minYear && y <= maxYear);
+  }
+  // Fine-tuning shortcuts: nearby years ±1, ±2
+  const offsets = [-2, -1, 1, 2];
+  return offsets
+    .map((o) => year + o)
+    .filter((y) => y >= minYear && y <= maxYear);
+}
+
+// ── Sound Toggle ──
+
+function SoundToggle() {
+  const [enabled, setEnabled] = useState(soundEnabled);
+  const toggle = useCallback(() => {
+    soundEnabled = !soundEnabled;
+    setEnabled(soundEnabled);
+    if (soundEnabled) playTick();
+  }, []);
+
+  return (
+    <button
+      className="text-lg cursor-pointer opacity-60 hover:opacity-100 transition-opacity"
+      onClick={toggle}
+      aria-label={enabled ? 'Mute sound effects' : 'Enable sound effects'}
+      title={enabled ? 'Sound on' : 'Sound off'}
+    >
+      {enabled ? '\ud83d\udd0a' : '\ud83d\udd07'}
+    </button>
+  );
+}
+
 // ── Confetti ──
 
 function Confetti() {
@@ -125,23 +223,18 @@ function Confetti() {
 
 function SkeletonLoader() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-lg mx-auto px-4 py-6">
-        {/* Header skeleton */}
         <div className="flex flex-col items-center gap-2 mb-6">
           <div className="skeleton w-32 h-7" />
           <div className="skeleton w-20 h-4" />
         </div>
-
-        {/* Progress dots skeleton */}
-        <div className="flex justify-center gap-2.5 mb-4">
+        <div className="flex justify-center gap-3 mb-6">
           {[0, 1, 2, 3, 4].map((i) => (
-            <div key={i} className="w-3 h-3 rounded-full bg-gray-200" />
+            <div key={i} className="skeleton w-8 h-8 rounded-full" />
           ))}
         </div>
-
-        {/* Card skeleton */}
-        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-md border border-gray-100 dark:border-gray-800 p-5">
           <div className="skeleton w-28 h-6 rounded-full mb-3" />
           <div className="skeleton w-3/4 h-6 mb-3" />
           <div className="space-y-2 mb-6">
@@ -152,21 +245,19 @@ function SkeletonLoader() {
           <div className="flex flex-col items-center gap-3">
             <div className="skeleton w-24 h-12 rounded-lg" />
             <div className="flex items-center gap-3 w-full">
-              <div className="skeleton w-14 h-14 rounded-2xl shrink-0" />
+              <div className="skeleton w-12 h-12 rounded-2xl shrink-0" />
               <div className="skeleton flex-1 h-2 rounded-full" />
-              <div className="skeleton w-14 h-14 rounded-2xl shrink-0" />
+              <div className="skeleton w-12 h-12 rounded-2xl shrink-0" />
             </div>
           </div>
         </div>
-
-        {/* Button skeleton */}
         <div className="skeleton w-full h-12 rounded-full mt-6" />
       </div>
     </div>
   );
 }
 
-// ── Year Picker with filled track ──
+// ── Year Picker with dynamic shortcuts, haptics ──
 
 function YearPicker({
   momentId,
@@ -202,6 +293,7 @@ function YearPicker({
     (direction: 1 | -1) => {
       const next = Math.max(minYear, Math.min(maxYear, yearRef.current + direction));
       onChange(momentId, next);
+      navigator.vibrate?.(5);
       timeoutRef.current = setTimeout(() => {
         intervalRef.current = setInterval(() => {
           const n = Math.max(minYear, Math.min(maxYear, yearRef.current + direction));
@@ -216,29 +308,48 @@ function YearPicker({
     return () => stopIncrement();
   }, [stopIncrement]);
 
-  // Filled track percentage
+  const handleSliderChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = parseInt(e.target.value);
+      onChange(momentId, val);
+      navigator.vibrate?.(3);
+    },
+    [momentId, onChange]
+  );
+
+  const handleShortcut = useCallback(
+    (y: number) => {
+      onChange(momentId, y);
+      navigator.vibrate?.(10);
+      playTick();
+    },
+    [momentId, onChange]
+  );
+
   const progress = ((year - minYear) / (maxYear - minYear)) * 100;
   const trackStyle = isTouched
     ? { background: `linear-gradient(to right, #d93900 0%, #d93900 ${progress}%, #e5e7eb ${progress}%, #e5e7eb 100%)` }
-    : { background: '#e5e7eb' };
+    : undefined;
+
+  const shortcuts = getYearShortcuts(year, minYear, maxYear, isTouched);
 
   return (
     <div className="flex flex-col items-center gap-3 w-full mt-4">
       <div
-        className={`text-5xl font-black tabular-nums transition-all duration-150 ${isTouched ? 'text-[#d93900]' : 'text-gray-300'}`}
+        className={`text-5xl font-black tabular-nums transition-all duration-150 ${isTouched ? 'text-[#d93900]' : 'text-gray-300 dark:text-gray-600'}`}
       >
         {isTouched ? year : '????'}
       </div>
 
       {!isTouched && (
-        <p className="text-xs text-gray-400 -mt-1" style={{ animation: 'swipe-hint 2s ease-in-out infinite' }}>
+        <p className="text-xs text-gray-500 dark:text-gray-400 -mt-1" style={{ animation: 'swipe-hint 2s ease-in-out infinite' }}>
           Slide to guess the year
         </p>
       )}
 
-      <div className="flex items-center gap-3 w-full">
+      <div className="flex items-center gap-2 sm:gap-3 w-full">
         <button
-          className="w-14 h-14 rounded-2xl bg-gray-100 text-gray-700 font-bold text-2xl flex items-center justify-center shrink-0 cursor-pointer hover:bg-gray-200 active:bg-gray-300 transition-all select-none press-feedback"
+          className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-xl flex items-center justify-center shrink-0 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 transition-all select-none press-feedback"
           onPointerDown={() => startIncrement(-1)}
           onPointerUp={stopIncrement}
           onPointerLeave={stopIncrement}
@@ -252,14 +363,16 @@ function YearPicker({
           min={minYear}
           max={maxYear}
           value={year}
-          onChange={(e) => onChange(momentId, parseInt(e.target.value))}
+          onChange={handleSliderChange}
           className="flex-1 h-2 cursor-pointer"
           style={trackStyle}
           step={1}
+          aria-label="Year guess for this question"
+          aria-valuetext={isTouched ? `Year ${year}` : 'Not set'}
         />
 
         <button
-          className="w-14 h-14 rounded-2xl bg-gray-100 text-gray-700 font-bold text-2xl flex items-center justify-center shrink-0 cursor-pointer hover:bg-gray-200 active:bg-gray-300 transition-all select-none press-feedback"
+          className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-xl flex items-center justify-center shrink-0 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 transition-all select-none press-feedback"
           onPointerDown={() => startIncrement(1)}
           onPointerUp={stopIncrement}
           onPointerLeave={stopIncrement}
@@ -269,7 +382,24 @@ function YearPicker({
         </button>
       </div>
 
-      <div className="flex justify-between w-full text-xs text-gray-400 px-16">
+      {/* Dynamic year shortcuts */}
+      <div className="flex items-center justify-center gap-2">
+        {shortcuts.map((y) => (
+          <button
+            key={y}
+            className={`px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-all border ${
+              isTouched && year === y
+                ? 'bg-[#d93900] text-white border-[#d93900]'
+                : 'bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+            onClick={() => handleShortcut(y)}
+          >
+            {y}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex justify-between w-full text-xs text-gray-400 dark:text-gray-500 px-14 sm:px-16">
         <span>{minYear}</span>
         <span>{maxYear}</span>
       </div>
@@ -277,7 +407,7 @@ function YearPicker({
   );
 }
 
-// ── Quiz Card with numbered badge and category emoji ──
+// ── Quiz Card ──
 
 function QuizCard({
   moment,
@@ -286,6 +416,7 @@ function QuizCard({
   minYear,
   maxYear,
   isTouched,
+  slideDirection,
   onChange,
 }: {
   moment: MomentPrompt;
@@ -294,35 +425,41 @@ function QuizCard({
   minYear: number;
   maxYear: number;
   isTouched: boolean;
+  slideDirection: 'left' | 'right';
   onChange: (id: string, year: number) => void;
 }) {
   const config = CATEGORY_CONFIG[moment.category] ?? {
     color: 'bg-gray-100 text-gray-700 border-gray-200',
+    darkColor: 'dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600',
     label: moment.category,
     emoji: '\u2753',
   };
 
+  const animation = slideDirection === 'left'
+    ? 'slideFromRight 0.3s ease-out'
+    : 'slideFromLeft 0.3s ease-out';
+
   return (
     <div
-      className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 relative"
-      style={{ animation: 'slideIn 0.3s ease-out' }}
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-md border border-gray-100 dark:border-gray-800 p-4 sm:p-5 relative"
+      style={{ animation }}
     >
       {/* Question number badge */}
       <div className="absolute -top-3 -left-2 w-8 h-8 rounded-full bg-[#d93900] text-white text-sm font-bold flex items-center justify-center shadow-md">
         {index + 1}
       </div>
 
-      <div className="mb-3 ml-4">
+      <div className="mb-3 ml-5">
         <span
-          className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${config.color}`}
+          className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${config.color} ${config.darkColor}`}
         >
           {config.emoji} {config.label}
         </span>
       </div>
-      <h3 className="font-bold text-gray-900 text-lg mb-2">
+      <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-2">
         {moment.promptTitle}
       </h3>
-      <p className="text-sm text-gray-600 leading-relaxed">
+      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
         {moment.promptTextRedacted}
       </p>
       <YearPicker
@@ -337,46 +474,157 @@ function QuizCard({
   );
 }
 
-// ── Progress Dots ──
+// ── Numbered Progress Steps (replaces dots + "Question X of 5") ──
 
-function ProgressDots({
+function ProgressSteps({
   total,
   current,
   touched,
   momentIds,
-  onDotClick,
+  onStepClick,
 }: {
   total: number;
   current: number;
   touched: Set<string>;
   momentIds: string[];
-  onDotClick: (index: number) => void;
+  onStepClick: (index: number) => void;
 }) {
   return (
-    <div className="flex items-center justify-center gap-2 mb-4">
+    <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-5" role="tablist" aria-label="Questions">
       {Array.from({ length: total }, (_, i) => {
         const isActive = i === current;
         const isDone = momentIds[i] ? touched.has(momentIds[i]) : false;
         return (
           <button
             key={i}
-            onClick={() => onDotClick(i)}
-            className={`rounded-full transition-all duration-200 cursor-pointer ${
+            role="tab"
+            aria-selected={isActive}
+            onClick={() => onStepClick(i)}
+            className={`rounded-full font-bold text-xs transition-all duration-200 cursor-pointer flex items-center justify-center ${
               isActive
-                ? 'w-8 h-3 bg-[#d93900] rounded-full'
+                ? 'w-9 h-9 bg-[#d93900] text-white shadow-md shadow-[#d93900]/20'
                 : isDone
-                  ? 'w-3 h-3 bg-[#d93900]/50'
-                  : 'w-3 h-3 bg-gray-200'
+                  ? 'w-8 h-8 bg-[#d93900]/15 text-[#d93900] dark:bg-[#d93900]/25'
+                  : 'w-8 h-8 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
             }`}
-            aria-label={`Go to question ${i + 1}`}
-          />
+            aria-label={`Question ${i + 1}${isDone ? ' (answered)' : ''}`}
+          >
+            {i + 1}
+          </button>
         );
       })}
     </div>
   );
 }
 
-// ── Reveal Screen with question titles ──
+// ── Scoring Rules Panel ──
+
+function ScoringRules({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) {
+  return (
+    <div className="mb-4">
+      <button
+        className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer transition-colors flex items-center gap-1 mx-auto"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+      >
+        {'\u2139\ufe0f'} How scoring works {isOpen ? '\u25b2' : '\u25bc'}
+      </button>
+      {isOpen && (
+        <div className="mt-2 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-3 text-xs text-gray-600 dark:text-gray-400" style={{ animation: 'fadeIn 0.2s ease-out' }}>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+            <span>Exact year</span><span className="font-bold text-green-600 dark:text-green-400 text-right">100 pts</span>
+            <span>1 year off</span><span className="font-bold text-green-500 dark:text-green-400 text-right">90 pts</span>
+            <span>2 years off</span><span className="font-bold text-yellow-600 dark:text-yellow-400 text-right">70 pts</span>
+            <span>3 years off</span><span className="font-bold text-yellow-500 dark:text-yellow-400 text-right">50 pts</span>
+            <span>4 years off</span><span className="font-bold text-orange-500 dark:text-orange-400 text-right">30 pts</span>
+            <span>5 years off</span><span className="font-bold text-red-400 text-right">15 pts</span>
+            <span>6+ years off</span><span className="font-bold text-gray-400 dark:text-gray-500 text-right">5 pts</span>
+          </div>
+          <p className="mt-2 text-center text-gray-400 dark:text-gray-500">5 questions &times; 100 max = 500 total</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Review Answers Screen (before submit) ──
+
+function ReviewScreen({
+  moments,
+  guesses,
+  onEdit,
+  onConfirm,
+  submitting,
+}: {
+  moments: MomentPrompt[];
+  guesses: Record<string, number>;
+  onEdit: (index: number) => void;
+  onConfirm: () => void;
+  submitting: boolean;
+}) {
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="max-w-lg mx-auto px-4 py-6">
+        <div className="text-center mb-5">
+          <h1 className="text-xl font-black text-gray-900 dark:text-white">{'\ud83d\udcdd'} Review Your Answers</h1>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Tap any answer to go back and change it</p>
+        </div>
+
+        <div className="space-y-2">
+          {moments.map((m, i) => {
+            const year = guesses[m.id];
+            const config = CATEGORY_CONFIG[m.category];
+
+            return (
+              <button
+                key={m.id}
+                className="w-full bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+                onClick={() => onEdit(i)}
+                style={{ animation: `fadeInUp 0.3s ease-out ${i * 0.05}s both` }}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-7 h-7 rounded-full bg-[#d93900] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                    {i + 1}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{m.promptTitle}</p>
+                    {config && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{config.emoji} {config.label}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 ml-2">
+                  <span className="text-lg font-black text-[#d93900]">
+                    {year !== undefined ? year : '???'}
+                  </span>
+                  <span className="text-gray-300 dark:text-gray-600 text-sm">{'\u270e'}</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <button
+            className="flex-1 py-3 rounded-full font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors press-feedback"
+            onClick={() => onEdit(0)}
+          >
+            Go Back
+          </button>
+          <button
+            className="flex-1 py-3 rounded-full text-white font-semibold text-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-[#d93900] hover:bg-[#c03000] press-feedback"
+            disabled={submitting}
+            onClick={onConfirm}
+          >
+            {submitting ? 'Submitting...' : 'Confirm & Submit'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Reveal Screen with user-controlled reveal + sound ──
 
 function RevealScreen({
   result,
@@ -386,29 +634,40 @@ function RevealScreen({
   onComplete: () => void;
 }) {
   const [revealedCount, setRevealedCount] = useState(0);
+  const allRevealed = revealedCount >= result.perQuestion.length;
+  const prevCountRef = useRef(0);
+
+  const revealNext = useCallback(() => {
+    if (!allRevealed) {
+      setRevealedCount((c) => c + 1);
+    }
+  }, [allRevealed]);
 
   useEffect(() => {
-    if (revealedCount < result.perQuestion.length) {
-      const timer = setTimeout(() => {
-        setRevealedCount((c) => c + 1);
-      }, 700);
-      return () => clearTimeout(timer);
-    } else {
-      const timer = setTimeout(onComplete, 1200);
+    if (revealedCount === 0) {
+      const timer = setTimeout(() => setRevealedCount(1), 400);
       return () => clearTimeout(timer);
     }
-  }, [revealedCount, result.perQuestion.length, onComplete]);
+  }, [revealedCount]);
+
+  useEffect(() => {
+    if (revealedCount > prevCountRef.current && revealedCount > 0) {
+      const q = result.perQuestion[revealedCount - 1];
+      if (q) playRevealSound(q.points >= 70);
+    }
+    prevCountRef.current = revealedCount;
+  }, [revealedCount, result.perQuestion]);
 
   const runningTotal = result.perQuestion
     .slice(0, revealedCount)
     .reduce((s, q) => s + q.points, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Revealing...</h1>
-          <p className="text-xs text-gray-400 mt-1">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Revealing...</h1>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             {revealedCount}/{result.perQuestion.length} answers
           </p>
         </div>
@@ -419,19 +678,19 @@ function RevealScreen({
             const emoji = getScoreEmoji(q.delta);
             const pointsColor =
               q.points >= 70
-                ? 'text-green-600'
+                ? 'text-green-600 dark:text-green-400'
                 : q.points >= 30
-                  ? 'text-yellow-600'
-                  : 'text-red-500';
+                  ? 'text-yellow-600 dark:text-yellow-400'
+                  : 'text-red-500 dark:text-red-400';
             const isPerfect = q.delta === 0;
 
             return (
               <div
                 key={q.id}
-                className={`bg-white rounded-xl shadow-sm border p-4 ${isPerfect ? 'border-green-300 ring-1 ring-green-200' : 'border-gray-200'}`}
+                className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm border p-4 ${isPerfect ? 'border-green-300 dark:border-green-700 ring-1 ring-green-200 dark:ring-green-800' : 'border-gray-200 dark:border-gray-800'}`}
                 style={{ animation: 'popIn 0.4s ease-out' }}
               >
-                <p className="text-xs font-semibold text-gray-500 mb-2">
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
                   {q.promptTitle}
                 </p>
                 <div className="flex items-center justify-between">
@@ -441,13 +700,13 @@ function RevealScreen({
                     </span>
                     <div>
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="text-gray-500">Guessed</span>
-                        <span className="font-bold">{q.guess}</span>
-                        <span className="text-gray-300">|</span>
-                        <span className="text-gray-500">Actual</span>
-                        <span className="font-bold">{q.actual}</span>
+                        <span className="text-gray-500 dark:text-gray-400">Guessed</span>
+                        <span className="font-bold text-gray-900 dark:text-white">{q.guess}</span>
+                        <span className="text-gray-300 dark:text-gray-600">|</span>
+                        <span className="text-gray-500 dark:text-gray-400">Actual</span>
+                        <span className="font-bold text-gray-900 dark:text-white">{q.actual}</span>
                       </div>
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                         {q.delta === 0
                           ? 'Nailed it! \ud83c\udf89'
                           : `${q.delta} year${q.delta > 1 ? 's' : ''} off`}
@@ -466,18 +725,36 @@ function RevealScreen({
         {revealedCount > 0 && (
           <div
             className="text-center mt-5"
+            aria-live="polite"
+            aria-atomic="true"
             style={{ animation: 'countUp 0.3s ease-out' }}
           >
-            <span className="text-4xl font-black text-gray-900">
+            <span className="text-4xl font-black text-gray-900 dark:text-white">
               {runningTotal}
             </span>
-            <span className="text-lg text-gray-400">/500</span>
+            <span className="text-lg text-gray-400 dark:text-gray-500">/500</span>
           </div>
         )}
 
-        {revealedCount < result.perQuestion.length && (
+        {!allRevealed && revealedCount > 0 ? (
           <button
-            className="w-full mt-4 py-2 text-sm text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
+            className="w-full mt-4 py-3 rounded-full font-semibold bg-[#d93900] text-white cursor-pointer hover:bg-[#c03000] transition-colors press-feedback"
+            onClick={revealNext}
+          >
+            Tap to reveal next ({revealedCount}/{result.perQuestion.length})
+          </button>
+        ) : allRevealed ? (
+          <button
+            className="w-full mt-4 py-3 rounded-full font-semibold bg-[#d93900] text-white cursor-pointer hover:bg-[#c03000] transition-colors press-feedback"
+            onClick={onComplete}
+          >
+            See Full Results
+          </button>
+        ) : null}
+
+        {!allRevealed && revealedCount > 0 && (
+          <button
+            className="w-full mt-2 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer transition-colors"
             onClick={onComplete}
           >
             Skip to results &rarr;
@@ -508,14 +785,7 @@ function ScoreRing({ score, maxScore }: { score: number; maxScore: number }) {
     <div className="flex flex-col items-center">
       <div className="relative w-36 h-36">
         <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-          <circle
-            cx="60"
-            cy="60"
-            r="54"
-            fill="none"
-            stroke="#e5e7eb"
-            strokeWidth="8"
-          />
+          <circle cx="60" cy="60" r="54" fill="none" stroke="#e5e7eb" strokeWidth="8" className="dark:stroke-gray-700" />
           <circle
             cx="60"
             cy="60"
@@ -530,44 +800,44 @@ function ScoreRing({ score, maxScore }: { score: number; maxScore: number }) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-black text-gray-900" style={{ animation: animated ? 'score-count 0.5s ease-out 0.3s both' : undefined }}>
+          <span className="text-3xl font-black text-gray-900 dark:text-white" style={{ animation: animated ? 'score-count 0.5s ease-out 0.3s both' : undefined }}>
             {score}
           </span>
-          <span className="text-xs text-gray-400">/500</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">/500</span>
         </div>
       </div>
       <div className="mt-2 text-center">
         <span className="text-2xl">{reaction.emoji}</span>
-        <p className="font-bold text-gray-900 mt-1">{reaction.text}</p>
+        <p className="font-bold text-gray-900 dark:text-white mt-1">{reaction.text}</p>
       </div>
     </div>
   );
 }
 
-// ── Result Card with question title ──
+// ── Result Card ──
 
 function ResultCard({ q }: { q: QuestionResult }) {
   const emoji = getScoreEmoji(q.delta);
   const pointsColor =
     q.points >= 70
-      ? 'text-green-600'
+      ? 'text-green-600 dark:text-green-400'
       : q.points >= 30
-        ? 'text-yellow-600'
-        : 'text-red-500';
+        ? 'text-yellow-600 dark:text-yellow-400'
+        : 'text-red-500 dark:text-red-400';
   const isPerfect = q.delta === 0;
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border p-4 ${isPerfect ? 'border-green-300' : 'border-gray-200'}`}>
+    <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm border p-4 ${isPerfect ? 'border-green-300 dark:border-green-700' : 'border-gray-200 dark:border-gray-800'}`}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <span className="text-2xl">{emoji}</span>
           <div>
-            <p className="text-sm font-semibold text-gray-900">{q.promptTitle}</p>
-            <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
-              <span>Guessed <span className="font-bold text-gray-700">{q.guess}</span></span>
-              <span className="text-gray-300">|</span>
-              <span>Actual <span className="font-bold text-gray-700">{q.actual}</span></span>
-              <span className="text-gray-300">|</span>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white">{q.promptTitle}</p>
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              <span>Guessed <span className="font-bold text-gray-700 dark:text-gray-300">{q.guess}</span></span>
+              <span className="text-gray-300 dark:text-gray-600">|</span>
+              <span>Actual <span className="font-bold text-gray-700 dark:text-gray-300">{q.actual}</span></span>
+              <span className="text-gray-300 dark:text-gray-600">|</span>
               <span>{q.delta === 0 ? 'Exact!' : `${q.delta}yr off`}</span>
             </div>
           </div>
@@ -576,7 +846,7 @@ function ResultCard({ q }: { q: QuestionResult }) {
           +{q.points}
         </span>
       </div>
-      <p className="text-sm text-gray-700 leading-relaxed">
+      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
         {q.revealContext}
       </p>
       {q.revealLink && (
@@ -591,7 +861,7 @@ function ResultCard({ q }: { q: QuestionResult }) {
   );
 }
 
-// ── Share Card (visual grid) ──
+// ── Share Card with visual grid + legend ──
 
 function ShareCard({ result }: { result: SubmitResult }) {
   const DELTA_COLORS: Record<number, string> = {
@@ -604,21 +874,29 @@ function ShareCard({ result }: { result: SubmitResult }) {
   };
 
   return (
-    <div className="flex items-center justify-center gap-1.5 my-3">
-      {result.perQuestion.map((q) => (
-        <div
-          key={q.id}
-          className={`w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold ${DELTA_COLORS[Math.min(q.delta, 5)] ?? 'bg-gray-800'}`}
-          title={`${q.promptTitle}: ${q.delta === 0 ? 'Exact!' : `${q.delta}yr off`}`}
-        >
-          {q.delta === 0 ? '\u2713' : q.delta}
-        </div>
-      ))}
+    <div className="my-3">
+      <div className="flex items-center justify-center gap-1.5">
+        {result.perQuestion.map((q) => (
+          <div
+            key={q.id}
+            className={`w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold ${DELTA_COLORS[Math.min(q.delta, 5)] ?? 'bg-gray-800'}`}
+            title={`${q.promptTitle}: ${q.delta === 0 ? 'Exact!' : `${q.delta}yr off`}`}
+          >
+            {q.delta === 0 ? '\u2713' : q.delta}
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center justify-center gap-3 mt-2 text-[10px] text-gray-500 dark:text-gray-400">
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-500 inline-block" /> Exact</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-yellow-400 inline-block" /> Close</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-red-500 inline-block" /> Far</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-gray-800 dark:bg-gray-600 inline-block" /> 6+</span>
+      </div>
     </div>
   );
 }
 
-// ── Leaderboard with medals and user highlight ──
+// ── Leaderboard ──
 
 function Leaderboard({
   title,
@@ -632,17 +910,17 @@ function Leaderboard({
   if (entries.length === 0) {
     return (
       <div className="mb-4">
-        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
           {title}
         </h3>
-        <p className="text-sm text-gray-400">No entries yet</p>
+        <p className="text-sm text-gray-400 dark:text-gray-500">No entries yet</p>
       </div>
     );
   }
 
   return (
     <div className="mb-4">
-      <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
+      <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
         {title}
       </h3>
       <div className="space-y-1">
@@ -656,14 +934,14 @@ function Leaderboard({
               className={`flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors ${
                 isMe
                   ? 'bg-[#d93900]/10 ring-1 ring-[#d93900]/20'
-                  : 'bg-gray-50'
+                  : 'bg-gray-50 dark:bg-gray-800'
               }`}
             >
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-gray-400 w-6">
+                <span className="text-sm font-bold text-gray-400 dark:text-gray-500 w-6">
                   {medal || `${e.rank}.`}
                 </span>
-                <span className={`text-sm font-medium ${isMe ? 'text-[#d93900] font-bold' : 'text-gray-800'}`}>
+                <span className={`text-sm font-medium ${isMe ? 'text-[#d93900] font-bold' : 'text-gray-800 dark:text-gray-200'}`}>
                   {e.username}
                   {isMe && (
                     <span className="ml-1.5 text-[10px] bg-[#d93900] text-white px-1.5 py-0.5 rounded-full font-bold uppercase">
@@ -672,7 +950,7 @@ function Leaderboard({
                   )}
                 </span>
               </div>
-              <span className={`text-sm font-bold ${isMe ? 'text-[#d93900]' : 'text-[#d93900]'}`}>
+              <span className="text-sm font-bold text-[#d93900]">
                 {e.score}
               </span>
             </div>
@@ -683,7 +961,49 @@ function Leaderboard({
   );
 }
 
-// ── Next puzzle countdown in a card ──
+// ── "Best at..." category insight ──
+
+function BestCategoryInsight({
+  puzzle,
+  result,
+}: {
+  puzzle: { moments: MomentPrompt[] };
+  result: SubmitResult;
+}) {
+  const catScores: Record<string, { total: number; count: number }> = {};
+  result.perQuestion.forEach((q) => {
+    const moment = puzzle.moments.find((m) => m.id === q.id);
+    if (!moment) return;
+    const cat = moment.category;
+    if (!catScores[cat]) catScores[cat] = { total: 0, count: 0 };
+    catScores[cat]!.total += q.points;
+    catScores[cat]!.count += 1;
+  });
+
+  const entries = Object.entries(catScores);
+  if (entries.length === 0) return null;
+
+  const best = entries.sort(
+    (a, b) => b[1].total / b[1].count - a[1].total / a[1].count
+  )[0]!;
+  const [bestCat, bestStats] = best;
+  const avgScore = Math.round(bestStats.total / bestStats.count);
+  const config = CATEGORY_CONFIG[bestCat];
+  if (!config) return null;
+
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-3 mb-4 flex items-center gap-3" style={{ animation: 'fadeIn 0.5s ease-out' }}>
+      <span className="text-2xl">{config.emoji}</span>
+      <div>
+        <p className="text-xs text-gray-500 dark:text-gray-400">Best at</p>
+        <p className="text-sm font-bold text-gray-900 dark:text-white">{config.label}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">Avg: {avgScore} pts/question</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Next puzzle countdown ──
 
 function NextPuzzleCountdown() {
   const [timeLeft, setTimeLeft] = useState('');
@@ -692,11 +1012,7 @@ function NextPuzzleCountdown() {
     const update = () => {
       const now = new Date();
       const tomorrow = new Date(
-        Date.UTC(
-          now.getUTCFullYear(),
-          now.getUTCMonth(),
-          now.getUTCDate() + 1
-        )
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)
       );
       const diff = tomorrow.getTime() - now.getTime();
       const h = Math.floor(diff / 3600000);
@@ -712,12 +1028,12 @@ function NextPuzzleCountdown() {
   }, []);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center mt-4">
-      <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-4 text-center mt-4">
+      <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
         Next puzzle in
       </p>
-      <p className="text-2xl font-bold text-gray-700 font-mono">{timeLeft}</p>
-      <p className="text-xs text-gray-400 mt-1">Come back tomorrow for a new challenge!</p>
+      <p className="text-2xl font-bold text-gray-700 dark:text-gray-200 font-mono">{timeLeft}</p>
+      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Come back tomorrow for a new challenge!</p>
     </div>
   );
 }
@@ -738,7 +1054,6 @@ function useSwipe(onSwipeLeft: () => void, onSwipeRight: () => void) {
       const deltaX = e.changedTouches[0]!.clientX - touchStartX.current;
       const deltaY = e.changedTouches[0]!.clientY - touchStartY.current;
 
-      // Only trigger if horizontal swipe is dominant and significant
       if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
         if (deltaX < 0) onSwipeLeft();
         else onSwipeRight();
@@ -773,8 +1088,33 @@ export const App = () => {
     finishReveal,
   } = useGame();
 
-  const swipeHandlers = useSwipe(goNext, goPrev);
   const showConfetti = phase === 'results' && (result?.totalScore ?? 0) >= 400;
+
+  // Local UI state
+  const [showReview, setShowReview] = useState(false);
+  const [showRules, setShowRules] = useState(false);
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
+
+  // Directional navigation
+  const handleNext = useCallback(() => {
+    setSlideDirection('left');
+    goNext();
+  }, [goNext]);
+
+  const handlePrev = useCallback(() => {
+    setSlideDirection('right');
+    goPrev();
+  }, [goPrev]);
+
+  const handleGoToCard = useCallback(
+    (index: number) => {
+      setSlideDirection(index > currentCard ? 'left' : 'right');
+      goToCard(index);
+    },
+    [currentCard, goToCard]
+  );
+
+  const swipeHandlers = useSwipe(handleNext, handlePrev);
 
   const handleShare = useCallback(() => {
     if (!result) return;
@@ -789,14 +1129,39 @@ export const App = () => {
     });
   }, [result]);
 
-  // Loading — skeleton
+  // Jump to first unanswered
+  const firstUnanswered = puzzle
+    ? puzzle.moments.findIndex((m) => !touched.has(m.id))
+    : -1;
+
+  const jumpToUnanswered = useCallback(() => {
+    if (firstUnanswered >= 0) {
+      setSlideDirection(firstUnanswered > currentCard ? 'left' : 'right');
+      goToCard(firstUnanswered);
+    }
+  }, [firstUnanswered, currentCard, goToCard]);
+
+  const answeredCount = puzzle
+    ? puzzle.moments.filter((m) => touched.has(m.id)).length
+    : 0;
+
+  // Celebration sound
+  const celebrationPlayed = useRef(false);
+  useEffect(() => {
+    if (phase === 'results' && (result?.totalScore ?? 0) >= 400 && !celebrationPlayed.current) {
+      celebrationPlayed.current = true;
+      setTimeout(playCelebration, 300);
+    }
+  }, [phase, result?.totalScore]);
+
+  // Loading
   if (phase === 'loading') {
     if (error) {
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3 px-6 text-center">
             <span className="text-4xl">{'\u26a0\ufe0f'}</span>
-            <p className="text-sm text-red-500">{error}</p>
+            <p className="text-sm text-red-500" role="alert">{error}</p>
             <button
               className="text-sm text-[#d93900] font-medium cursor-pointer"
               onClick={() => window.location.reload()}
@@ -810,7 +1175,27 @@ export const App = () => {
     return <SkeletonLoader />;
   }
 
-  // Quiz — one card at a time with swipe
+  // Review answers (before submit)
+  if (showReview && phase === 'quiz' && puzzle) {
+    return (
+      <ReviewScreen
+        moments={puzzle.moments}
+        guesses={guesses}
+        onEdit={(index) => {
+          setShowReview(false);
+          setSlideDirection(index > currentCard ? 'left' : 'right');
+          goToCard(index);
+        }}
+        onConfirm={() => {
+          setShowReview(false);
+          void submit();
+        }}
+        submitting={submitting}
+      />
+    );
+  }
+
+  // Quiz
   if (phase === 'quiz' && puzzle) {
     const currentMoment = puzzle.moments[currentCard]!;
     const midYear = Math.round((puzzle.minYear + puzzle.maxYear) / 2);
@@ -819,31 +1204,35 @@ export const App = () => {
     const currentTouched = touched.has(currentMoment.id);
 
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <div
-          className="max-w-lg mx-auto px-4 py-6"
+          className="max-w-lg mx-auto px-3 sm:px-4 py-4 sm:py-6"
           onTouchStart={swipeHandlers.onTouchStart}
           onTouchEnd={swipeHandlers.onTouchEnd}
         >
           {/* Header */}
-          <div className="text-center mb-4">
-            <h1 className="text-xl font-black text-gray-900 tracking-tight">
-              {'\u23ea'} Rewinddit
-            </h1>
-            <p className="text-xs text-gray-400 mt-0.5">{puzzle.date}</p>
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="w-8" />
+            <div className="text-center">
+              <h1 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white tracking-tight">
+                {'\u23ea'} Rewinddit
+              </h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{puzzle.date}</p>
+            </div>
+            <SoundToggle />
           </div>
 
-          <ProgressDots
+          {/* Numbered progress steps (replaces dots + "Question X of 5") */}
+          <ProgressSteps
             total={5}
             current={currentCard}
             touched={touched}
             momentIds={puzzle.moments.map((m) => m.id)}
-            onDotClick={goToCard}
+            onStepClick={handleGoToCard}
           />
 
-          <p className="text-center text-sm text-gray-500 mb-4">
-            Question {currentCard + 1} of 5
-          </p>
+          {/* Scoring rules */}
+          <ScoringRules isOpen={showRules} onToggle={() => setShowRules((v) => !v)} />
 
           <QuizCard
             key={currentMoment.id}
@@ -853,14 +1242,30 @@ export const App = () => {
             minYear={puzzle.minYear}
             maxYear={puzzle.maxYear}
             isTouched={currentTouched}
+            slideDirection={slideDirection}
             onChange={setGuess}
           />
 
-          <div className="flex gap-3 mt-6">
+          {/* Unanswered warning */}
+          {isLastCard && !allGuessed && (
+            <div className="mt-3 flex items-center justify-between bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg px-3 py-2" role="alert">
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                {'\u26a0\ufe0f'} {5 - answeredCount} unanswered question{5 - answeredCount > 1 ? 's' : ''}
+              </p>
+              <button
+                className="text-xs font-semibold text-[#d93900] cursor-pointer hover:underline"
+                onClick={jumpToUnanswered}
+              >
+                Answer Q{firstUnanswered + 1} &rarr;
+              </button>
+            </div>
+          )}
+
+          <div className="flex gap-3 mt-5 sm:mt-6">
             {!isFirstCard && (
               <button
-                className="flex-1 py-3 rounded-full font-semibold bg-gray-100 text-gray-700 cursor-pointer hover:bg-gray-200 transition-colors press-feedback"
-                onClick={goPrev}
+                className="flex-1 py-3 rounded-full font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors press-feedback"
+                onClick={handlePrev}
               >
                 Previous
               </button>
@@ -871,9 +1276,9 @@ export const App = () => {
                 className={`flex-1 py-3 rounded-full font-semibold cursor-pointer transition-all press-feedback ${
                   currentTouched
                     ? 'bg-[#d93900] text-white hover:bg-[#c03000]'
-                    : 'bg-gray-200 text-gray-500'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                 }`}
-                onClick={goNext}
+                onClick={handleNext}
               >
                 Next
               </button>
@@ -881,22 +1286,22 @@ export const App = () => {
               <button
                 className="flex-1 py-3 rounded-full text-white font-semibold text-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-[#d93900] hover:bg-[#c03000] press-feedback"
                 disabled={!allGuessed || submitting}
-                onClick={submit}
+                onClick={() => setShowReview(true)}
               >
-                {submitting ? 'Submitting...' : 'Submit Guesses'}
+                {submitting ? 'Submitting...' : 'Review & Submit'}
               </button>
             )}
           </div>
 
           {error && (
-            <p className="text-sm text-red-500 text-center mt-3">{error}</p>
+            <p className="text-sm text-red-500 text-center mt-3" role="alert">{error}</p>
           )}
         </div>
       </div>
     );
   }
 
-  // Revealing — animated one-at-a-time
+  // Revealing
   if (phase === 'revealing' && result) {
     return <RevealScreen result={result} onComplete={finishReveal} />;
   }
@@ -904,47 +1309,44 @@ export const App = () => {
   // Results
   if (phase === 'results' && result) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         {showConfetti && <Confetti />}
 
-        <div className="max-w-lg mx-auto px-4 py-6">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight">
-              {'\u23ea'} Rewinddit
-            </h1>
-            <p className="text-xs text-gray-400 mt-0.5">{result.date}</p>
+        <div className="max-w-lg mx-auto px-3 sm:px-4 py-4 sm:py-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="w-8" />
+            <div className="text-center">
+              <h1 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+                {'\u23ea'} Rewinddit
+              </h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{result.date}</p>
+            </div>
+            <SoundToggle />
           </div>
 
           {/* Score ring + stats */}
           <div
-            className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-6"
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-md border border-gray-100 dark:border-gray-800 p-4 sm:p-6 mb-6"
             style={{ animation: 'fadeIn 0.5s ease-out' }}
           >
             <div className="flex flex-col items-center">
               <ScoreRing score={result.totalScore} maxScore={500} />
 
-              {/* Visual share grid */}
               <ShareCard result={result} />
 
               <div className="flex justify-center gap-6 mt-2">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-gray-900">
-                    {result.streak}
-                  </p>
-                  <p className="text-xs text-gray-500">Streak</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{result.streak}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Streak</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-gray-900">
-                    {result.bestStreak}
-                  </p>
-                  <p className="text-xs text-gray-500">Best</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{result.bestStreak}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Best</p>
                 </div>
                 {result.dailyRank && (
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-gray-900">
-                      #{result.dailyRank}
-                    </p>
-                    <p className="text-xs text-gray-500">Rank</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">#{result.dailyRank}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Rank</p>
                   </div>
                 )}
               </div>
@@ -958,8 +1360,11 @@ export const App = () => {
             </div>
           </div>
 
-          {/* Per-question reveals */}
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+          {/* "Best at..." insight */}
+          {puzzle && <BestCategoryInsight puzzle={puzzle} result={result} />}
+
+          {/* Breakdown */}
+          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
             Breakdown
           </h2>
           <div className="space-y-3 mb-6">
@@ -971,7 +1376,7 @@ export const App = () => {
           </div>
 
           {/* Leaderboards */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <Leaderboard
               title="Today's Top 10"
               entries={leaderboards?.dailyTop ?? []}
@@ -984,7 +1389,6 @@ export const App = () => {
             />
           </div>
 
-          {/* Next puzzle countdown */}
           <NextPuzzleCountdown />
         </div>
       </div>
@@ -993,10 +1397,10 @@ export const App = () => {
 
   // Fallback
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
         <span className="text-4xl">{'\ud83e\udd14'}</span>
-        <p className="text-gray-500">Something went wrong. Please reload.</p>
+        <p className="text-gray-500 dark:text-gray-400">Something went wrong. Please reload.</p>
       </div>
     </div>
   );
