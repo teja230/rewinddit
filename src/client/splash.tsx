@@ -1,7 +1,7 @@
 import './index.css';
 
 import { requestExpandedMode } from '@devvit/web/client';
-import { StrictMode, useEffect, useState } from 'react';
+import React, { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { PuzzleTodayResponse, SubmitResult, QuestionResult } from '../shared/api';
 

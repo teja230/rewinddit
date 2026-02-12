@@ -122,22 +122,18 @@ api.get('/puzzle/today', async (c) => {
     const username = await reddit.getCurrentUsername();
     const userId = username ?? 'anonymous';
 
-    const existingPlay = await redis.get(K.play(today, userId));
-    const hasPlayed = existingPlay !== undefined && existingPlay !== null;
-
-    let previousResult: SubmitResult | undefined;
-    if (hasPlayed) {
-      previousResult = JSON.parse(existingPlay!) as SubmitResult;
-    }
+    // K.attempts is the source of truth for today's plays
+    const attemptsRaw = await redis.get(K.attempts(today, userId));
+    const allAttempts: SubmitResult[] = attemptsRaw
+      ? (JSON.parse(attemptsRaw) as SubmitResult[])
+      : [];
+    const hasPlayed = allAttempts.length > 0;
+    const previousResult = hasPlayed ? allAttempts[allAttempts.length - 1] : undefined;
 
     const moments = getMomentPrompts(puzzle.momentIds);
 
     let playerCount = 0;
     try { playerCount = await redis.zCard(K.dailyLb(today)); } catch { /* */ }
-
-    // Load attempts
-    const attemptsRaw = await redis.get(K.attempts(today, userId));
-    const allAttempts = attemptsRaw ? (JSON.parse(attemptsRaw) as SubmitResult[]) : [];
 
     return c.json<PuzzleTodayResponse>({
       date: today,
