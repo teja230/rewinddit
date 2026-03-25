@@ -4,6 +4,8 @@ Rewinddittt is your daily Reddit time-travel game.
 
 Every day, you get 5 memorable moments from Reddit history with the obvious clues hidden. Your challenge is to guess the year each one happened.
 
+Built for Reddit 2026 Hackathon: https://devpost.com/software/rewinddittt
+
 When you submit your guesses, you instantly see:
 - The real year
 - A short reveal about what happened
